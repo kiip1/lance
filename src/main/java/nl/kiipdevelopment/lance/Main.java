@@ -23,22 +23,10 @@ public class Main {
                 ##          ###########   ##      ##   ##########  ###########
                 ##########  ###########   ##      ##    #########   #########
                 ##########   ###### ###   ##      ##     #######     #######
+                
+            ######################################################################
             """
         );
-
-        String version = Main.class.getPackage().getImplementationVersion();
-
-        if (version == null)
-            version = "Test";
-
-        version = " " + version + " ";
-
-        String out = String
-            .format("%" + 70 + "s%s%" + 70 + "s", "", version.replace(" ", "<SPACE>"), "")
-            .replace(" ", "#")
-            .replace("<SPACE>", " ");
-
-        System.out.println(out.substring(out.length() / 2 - 35, out.length() / 2 + 35));
 
         new LanceServer().start();
         new LanceConsoleClient().start();
