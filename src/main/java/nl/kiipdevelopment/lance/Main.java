@@ -38,10 +38,7 @@ public class Main {
 
         client.start();
 
-        System.out.println(client.getStringAsync("test")
-            .get()
-            .getObject()
-            .get());
+        System.out.println(client.getStringAsync("test").get());
         // end of test
     }
 }

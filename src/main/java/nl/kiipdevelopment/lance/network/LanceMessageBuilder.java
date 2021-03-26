@@ -20,7 +20,7 @@ public class LanceMessageBuilder {
         return this;
     }
 
-    public LanceMessageBuilder setObject(String message) {
+    public LanceMessageBuilder setMessage(String message) {
         this.message = message;
 
         return this;

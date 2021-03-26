@@ -99,7 +99,7 @@ public class LanceClient extends Thread {
         out.println(new LanceMessageBuilder()
             .setId(id)
             .setStatusCode(StatusCode.OK)
-            .setObject("get " + key)
+            .setMessage("get " + key)
             .build()
             .toString()
         );

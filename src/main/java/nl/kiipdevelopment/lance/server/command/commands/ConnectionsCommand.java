@@ -2,7 +2,6 @@ package nl.kiipdevelopment.lance.server.command.commands;
 
 import nl.kiipdevelopment.lance.network.LanceMessage;
 import nl.kiipdevelopment.lance.network.LanceMessageBuilder;
-import nl.kiipdevelopment.lance.network.LanceString;
 import nl.kiipdevelopment.lance.network.StatusCode;
 import nl.kiipdevelopment.lance.server.ServerConnectionHandler;
 import nl.kiipdevelopment.lance.server.command.Command;
@@ -17,10 +16,10 @@ public class ConnectionsCommand extends Command {
         return new LanceMessageBuilder()
             .setId(id)
             .setStatusCode(StatusCode.OK)
-            .setObject(new LanceString(String.join(
+            .setMessage(String.join(
                 "\n",
                 handler.server.connections
-            )))
+            ))
             .build();
     }
 }
