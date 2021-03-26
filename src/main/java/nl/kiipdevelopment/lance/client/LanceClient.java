@@ -5,14 +5,13 @@ import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.network.LanceMessage;
 import nl.kiipdevelopment.lance.network.StatusCode;
 import nl.kiipdevelopment.lance.network.LanceMessageBuilder;
-import nl.kiipdevelopment.lance.server.command.commands.GetCommand;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.*;
 
 public class LanceClient extends Thread {
     private final Configuration configuration;
@@ -76,19 +75,21 @@ public class LanceClient extends Thread {
 
         int id = ThreadLocalRandom.current().nextInt();
 
-        System.out.println(id);
-
         out.println(new LanceMessage(
             id,
             StatusCode.OK,
             line
-        ).getEncoded());
+        ));
     }
 
     public String getString(String key) {
         return get(key);
     }
 
+    public Future<String> getStringAsync(String key) {
+        return getAsync(key);
+    }
+    
     private String get(String key) {
         while (socket == null || out == null || in == null || listenerManager == null)
             Thread.onSpinWait();
@@ -98,10 +99,9 @@ public class LanceClient extends Thread {
         out.println(new LanceMessageBuilder()
             .setId(id)
             .setStatusCode(StatusCode.OK)
-            .setCommand(new GetCommand())
-            .addArgument(key)
+            .setObject("get " + key)
             .build()
-            .getEncoded()
+            .toString()
         );
 
         return listenerManager.resolve(new ResolvableListener<>() {
@@ -117,7 +117,7 @@ public class LanceClient extends Thread {
 
             @Override
             public boolean run(String line) {
-                LanceMessage lanceMessage = LanceMessage.getFromEncoded(line);
+                LanceMessage lanceMessage = LanceMessage.getFromString(line);
 
                 if (lanceMessage == null) {
                     out.close();
@@ -134,6 +134,12 @@ public class LanceClient extends Thread {
                 return false;
             }
         });
+    }
+
+    public <T> Future<String> getAsync(String key) {
+        return Executors
+            .newSingleThreadExecutor()
+            .submit(() -> get(key));
     }
 
     public void close() {

@@ -42,7 +42,7 @@ public class ServerConnectionHandler extends Thread {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             while (active) {
-                LanceMessage lanceMessage = LanceMessage.getFromEncoded(in.readLine());
+                LanceMessage lanceMessage = LanceMessage.getFromString(in.readLine());
 
                 if (lanceMessage == null) {
                     close("Invalid message.");
@@ -50,7 +50,7 @@ public class ServerConnectionHandler extends Thread {
                     return;
                 }
 
-                out.println(CommandManager.handle(this, lanceMessage.getId(), lanceMessage).getEncoded());
+                out.println(CommandManager.handle(this, lanceMessage.getId(), lanceMessage).toString());
             }
 
             System.out.println("Closed connection from " + ipAndPort + ".");
@@ -67,7 +67,7 @@ public class ServerConnectionHandler extends Thread {
             ThreadLocalRandom.current().nextInt(),
             StatusCode.CLOSING,
             reason
-        ).getEncoded());
+        ));
 
         out.close();
     }

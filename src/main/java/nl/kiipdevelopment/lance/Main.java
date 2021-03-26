@@ -4,8 +4,10 @@ import nl.kiipdevelopment.lance.client.LanceClient;
 import nl.kiipdevelopment.lance.client.LanceConsoleClient;
 import nl.kiipdevelopment.lance.server.LanceServer;
 
+import java.util.concurrent.ExecutionException;
+
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         System.out.println(
             """
                 ##
@@ -36,7 +38,10 @@ public class Main {
 
         client.start();
 
-        System.out.println(client.getString("test"));
+        System.out.println(client.getStringAsync("test")
+            .get()
+            .getObject()
+            .get());
         // end of test
     }
 }
