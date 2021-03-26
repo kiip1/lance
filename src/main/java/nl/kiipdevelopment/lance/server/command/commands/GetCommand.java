@@ -15,15 +15,15 @@ public class GetCommand extends Command {
     public LanceMessage execute(ServerConnectionHandler handler, int id, String trigger, String[] args) {
         LanceMessageBuilder builder = new LanceMessageBuilder();
 
-        builder
-            .setId(id)
-            .setStatusCode(StatusCode.OK);
+        builder.setId(id).setStatusCode(StatusCode.OK);
 
         if (args.length == 0) {
             builder.setStatusCode(StatusCode.ERROR);
 
             builder.setMessage("Usage: get <key>");
-        } else builder.setMessage("test");
+        } else {
+            builder.setMessage("test");
+        }
 
         return builder.build();
     }

@@ -3,11 +3,14 @@ package nl.kiipdevelopment.lance.server;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.configuration.ServerConfiguration;
 import nl.kiipdevelopment.lance.server.command.CommandManager;
+import nl.kiipdevelopment.lance.server.storage.Storage;
+import nl.kiipdevelopment.lance.server.storage.StorageException;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +20,7 @@ public class LanceServer extends Thread {
     private final int port;
 
     private ServerSocket serverSocket;
+    private Storage<?> storage;
 
     public final List<ServerConnectionHandler> handlers = new ArrayList<>();
     public final List<String> connections = new ArrayList<>();
@@ -44,6 +48,14 @@ public class LanceServer extends Thread {
 
     @Override
     public void run() {
+        try {
+            storage = configuration.getStorageType().getStorage(Path.of(configuration.getStorageLocation()));
+        } catch (IOException | StorageException e) {
+            System.err.println("Error happened while initializing storage");
+            e.printStackTrace();
+            return;
+        }
+        
         CommandManager.init();
 
         try {
