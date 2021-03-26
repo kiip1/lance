@@ -31,7 +31,7 @@ public class LanceMessage {
         return id + " " + code.getId() + " " + encode(object.getAsString());
     }
 
-    public static LanceMessage getFromEncoded(LanceObject<?> lanceObject, String string) {
+    public static LanceMessage getFromString(LanceObject<?> lanceObject, String string) {
         try {
             String[] parts = string.split(" ");
 

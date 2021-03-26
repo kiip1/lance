@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.*;
 
 public class LanceClient extends Thread {
     private final Configuration configuration;
@@ -86,6 +86,10 @@ public class LanceClient extends Thread {
             .getAsString();
     }
 
+    public Future<LanceMessage> getStringAsync(String key) {
+        return getAsync(new LanceString(), key);
+    }
+
     public <T> LanceMessage get(LanceObject<T> lanceObject, String key) {
         while (socket == null || out == null || in == null || listenerManager == null)
             Thread.onSpinWait();
@@ -113,7 +117,7 @@ public class LanceClient extends Thread {
 
             @Override
             public boolean run(String line) {
-                LanceMessage lanceMessage = LanceMessage.getFromEncoded(lanceObject, line);
+                LanceMessage lanceMessage = LanceMessage.getFromString(lanceObject, line);
 
                 if (lanceMessage == null) {
                     out.close();
@@ -130,6 +134,12 @@ public class LanceClient extends Thread {
                 return false;
             }
         });
+    }
+
+    public <T> Future<LanceMessage> getAsync(LanceObject<T> lanceObject, String key) {
+        return Executors
+            .newSingleThreadExecutor()
+            .submit(() -> get(lanceObject, key));
     }
 
     public void close() {

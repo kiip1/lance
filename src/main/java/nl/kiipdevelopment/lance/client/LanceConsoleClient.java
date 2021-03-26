@@ -37,7 +37,7 @@ public class LanceConsoleClient extends LanceClient {
                 System.out.println("Console client started on " + socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort() + ".");
 
                 listenerManager.listen(line -> {
-                    LanceMessage lanceMessage = LanceMessage.getFromEncoded(new LanceString(), line);
+                    LanceMessage lanceMessage = LanceMessage.getFromString(new LanceString(), line);
 
                     if (lanceMessage == null) {
                         out.close();

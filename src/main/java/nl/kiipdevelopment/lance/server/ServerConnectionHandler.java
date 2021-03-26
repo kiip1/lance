@@ -43,7 +43,7 @@ public class ServerConnectionHandler extends Thread {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             while (active) {
-                LanceMessage lanceMessage = LanceMessage.getFromEncoded(new LanceString(), in.readLine());
+                LanceMessage lanceMessage = LanceMessage.getFromString(new LanceString(), in.readLine());
 
                 if (lanceMessage == null) {
                     close("Invalid message.");
