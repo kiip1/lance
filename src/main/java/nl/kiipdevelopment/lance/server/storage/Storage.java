@@ -5,5 +5,5 @@ public interface Storage<V> extends AutoCloseable {
 	
 	boolean exists(String key);
 	
-	void set(String key, V value);
+	boolean set(String key, V value);
 }
