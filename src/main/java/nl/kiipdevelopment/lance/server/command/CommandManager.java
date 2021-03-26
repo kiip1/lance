@@ -48,11 +48,7 @@ public class CommandManager {
         Command command = commandMap.get(trigger);
 
         if (command == null) return unknownCommand(id);
-        else return new LanceMessage(
-            id,
-            StatusCode.OK,
-            new LanceString(command.execute(handler, trigger, args))
-        );
+        else return command.execute(handler, id, trigger, args);
     }
 
     public static Map<String, Command> getCommandMap() {

@@ -1,5 +1,6 @@
 package nl.kiipdevelopment.lance.server.command;
 
+import nl.kiipdevelopment.lance.network.LanceMessage;
 import nl.kiipdevelopment.lance.server.ServerConnectionHandler;
 
 import java.util.ArrayList;
@@ -17,5 +18,5 @@ public abstract class Command {
         this.description = description;
     }
 
-    public abstract String execute(ServerConnectionHandler handler, String trigger, String[] args);
+    public abstract LanceMessage execute(ServerConnectionHandler handler, int id, String trigger, String[] args);
 }

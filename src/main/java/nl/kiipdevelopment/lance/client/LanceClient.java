@@ -2,12 +2,7 @@ package nl.kiipdevelopment.lance.client;
 
 import nl.kiipdevelopment.lance.configuration.Configuration;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
-import nl.kiipdevelopment.lance.network.LanceMessage;
-import nl.kiipdevelopment.lance.network.LanceObject;
-import nl.kiipdevelopment.lance.network.LanceString;
-import nl.kiipdevelopment.lance.network.StatusCode;
-import nl.kiipdevelopment.lance.network.LanceMessageBuilder;
-import nl.kiipdevelopment.lance.server.command.commands.GetCommand;
+import nl.kiipdevelopment.lance.network.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -102,8 +97,7 @@ public class LanceClient extends Thread {
         out.println(new LanceMessageBuilder()
             .setId(id)
             .setStatusCode(StatusCode.OK)
-            .setCommand(new GetCommand())
-            .addArgument(key)
+            .setObject(new LanceString("get " + key))
             .build()
             .getEncoded()
         );

@@ -2,43 +2,41 @@ plugins {
     id 'java'
 }
 
-def versionPropsFile = file('version.properties')
-def name = '1.0.0';
-
-Properties versionProps = new Properties()
-
-if (versionPropsFile.canRead()) {
-    versionProps.load(new FileInputStream(versionPropsFile))
-
-    def build = versionProps['VERSION_BUILD'].toInteger() + 1
-
-    name = versionProps['VERSION_NAME'] + 'b' + build.toString()
-
-    versionProps['VERSION_BUILD'] = build.toString()
-    versionProps.store(versionPropsFile.newWriter(), null)
-}
-
 group 'nl.kiipdevelopment'
-version name
+version '1.0.0'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    implementation 'org.jetbrains:annotations:20.1.0'
     implementation 'com.google.code.gson:gson:2.8.6'
 }
 
 jar {
+    def versionPropsFile = file('version.properties')
+    def name = '1.0.0';
+
+    Properties versionProps = new Properties()
+
+    if (versionPropsFile.canRead()) {
+        versionProps.load(new FileInputStream(versionPropsFile))
+
+        def build = versionProps['VERSION_BUILD'].toInteger() + 1
+
+        name = versionProps['VERSION_NAME'] + 'b' + build.toString()
+
+        versionProps['VERSION_BUILD'] = build.toString()
+        versionProps.store(versionPropsFile.newWriter(), null)
+    }
+
+    version name
+
     manifest {
         attributes(
                 'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
                 'Main-Class': 'nl.kiipdevelopment.lance.Main'
         )
     }
-}
-
-dependencies {
-    implementation 'org.jetbrains:annotations:20.1.0'
-    implementation 'org.jetbrains:annotations:20.1.0'
 }
