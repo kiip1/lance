@@ -3,11 +3,11 @@ plugins {
 }
 
 def versionPropsFile = file('version.properties')
-def name = 'ERROR';
+def name = '1.0.0';
+
+Properties versionProps = new Properties()
 
 if (versionPropsFile.canRead()) {
-    Properties versionProps = new Properties()
-
     versionProps.load(new FileInputStream(versionPropsFile))
 
     def build = versionProps['VERSION_BUILD'].toInteger() + 1
@@ -16,7 +16,7 @@ if (versionPropsFile.canRead()) {
 
     versionProps['VERSION_BUILD'] = build.toString()
     versionProps.store(versionPropsFile.newWriter(), null)
-} else throw new GradleException("Could not read version.properties!")
+}
 
 group 'nl.kiipdevelopment'
 version name
