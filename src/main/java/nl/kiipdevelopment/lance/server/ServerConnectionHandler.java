@@ -2,7 +2,6 @@ package nl.kiipdevelopment.lance.server;
 
 import nl.kiipdevelopment.lance.configuration.ServerConfiguration;
 import nl.kiipdevelopment.lance.network.LanceMessage;
-import nl.kiipdevelopment.lance.network.LanceString;
 import nl.kiipdevelopment.lance.network.StatusCode;
 import nl.kiipdevelopment.lance.server.command.CommandManager;
 
@@ -43,7 +42,7 @@ public class ServerConnectionHandler extends Thread {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             while (active) {
-                LanceMessage lanceMessage = LanceMessage.getFromEncoded(new LanceString(), in.readLine());
+                LanceMessage lanceMessage = LanceMessage.getFromEncoded(in.readLine());
 
                 if (lanceMessage == null) {
                     close("Invalid message.");
@@ -67,7 +66,7 @@ public class ServerConnectionHandler extends Thread {
         out.println(new LanceMessage(
             ThreadLocalRandom.current().nextInt(),
             StatusCode.CLOSING,
-            new LanceString(reason)
+            reason
         ).getEncoded());
 
         out.close();

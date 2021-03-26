@@ -3,7 +3,6 @@ package nl.kiipdevelopment.lance.client;
 import nl.kiipdevelopment.lance.configuration.Configuration;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.network.LanceMessage;
-import nl.kiipdevelopment.lance.network.LanceString;
 
 import java.util.Scanner;
 
@@ -37,7 +36,7 @@ public class LanceConsoleClient extends LanceClient {
                 System.out.println("Console client started on " + socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort());
 
                 listenerManager.listen(line -> {
-                    LanceMessage lanceMessage = LanceMessage.getFromEncoded(new LanceString(), line);
+                    LanceMessage lanceMessage = LanceMessage.getFromEncoded(line);
 
                     if (lanceMessage == null) {
                         out.close();
@@ -45,7 +44,7 @@ public class LanceConsoleClient extends LanceClient {
                         return false;
                     }
 
-                    System.out.println("[" + lanceMessage.getCode() + "] [" + lanceMessage.getId() + "] " + lanceMessage.getObject().get());
+                    System.out.println("[" + lanceMessage.getCode() + "] [" + lanceMessage.getId() + "] " + lanceMessage.toString());
 
                     return false;
                 });

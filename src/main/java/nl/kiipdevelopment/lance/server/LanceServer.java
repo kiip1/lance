@@ -54,7 +54,6 @@ public class LanceServer extends Thread {
             while (active)
                 try {
                     ServerConnectionHandler handler = new ServerConnectionHandler(this, configuration, serverSocket.accept());
-
                     handler.start();
 
                     handlers.add(handler);

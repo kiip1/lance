@@ -1,7 +1,6 @@
 package nl.kiipdevelopment.lance.server.command;
 
 import nl.kiipdevelopment.lance.network.LanceMessage;
-import nl.kiipdevelopment.lance.network.LanceString;
 import nl.kiipdevelopment.lance.network.StatusCode;
 import nl.kiipdevelopment.lance.server.ServerConnectionHandler;
 import nl.kiipdevelopment.lance.server.command.commands.ConnectionsCommand;
@@ -40,7 +39,7 @@ public class CommandManager {
     }
 
     public static LanceMessage handle(ServerConnectionHandler handler, int id, LanceMessage lanceMessage) {
-        String[] parts = lanceMessage.getObject().getAsString().split(" ");
+        String[] parts = lanceMessage.getMessage().split(" ");
 
         String trigger = parts[0];
         String[] args = Arrays.copyOfRange(parts, 1, parts.length);
@@ -51,7 +50,7 @@ public class CommandManager {
         else return new LanceMessage(
             id,
             StatusCode.OK,
-            new LanceString(command.execute(handler, trigger, args))
+            command.execute(handler, trigger, args)
         );
     }
 
@@ -63,7 +62,7 @@ public class CommandManager {
         return new LanceMessage(
             id,
             StatusCode.ERROR,
-            new LanceString("That command doesn't exist. Type \"help\" for help.")
+            "That command doesn't exist. Type \"help\" for help."
         );
     }
 }

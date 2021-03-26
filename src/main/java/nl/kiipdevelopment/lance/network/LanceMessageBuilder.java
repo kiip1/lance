@@ -39,7 +39,7 @@ public class LanceMessageBuilder {
         return new LanceMessage(
             id,
             code,
-            new LanceString(command.triggers.get(0) + " " + String.join(" ", arguments))
+            command.triggers.get(0) + " " + String.join(" ", arguments)
         );
     }
 }

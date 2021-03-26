@@ -3,8 +3,6 @@ package nl.kiipdevelopment.lance.client;
 import nl.kiipdevelopment.lance.configuration.Configuration;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.network.LanceMessage;
-import nl.kiipdevelopment.lance.network.LanceObject;
-import nl.kiipdevelopment.lance.network.LanceString;
 import nl.kiipdevelopment.lance.network.StatusCode;
 import nl.kiipdevelopment.lance.network.LanceMessageBuilder;
 import nl.kiipdevelopment.lance.server.command.commands.GetCommand;
@@ -83,17 +81,15 @@ public class LanceClient extends Thread {
         out.println(new LanceMessage(
             id,
             StatusCode.OK,
-            new LanceString(line)
+            line
         ).getEncoded());
     }
 
     public String getString(String key) {
-        return get(new LanceString(), key)
-            .getObject()
-            .getAsString();
+        return get(key);
     }
 
-    public <T> LanceMessage get(LanceObject<T> lanceObject, String key) {
+    private String get(String key) {
         while (socket == null || out == null || in == null || listenerManager == null)
             Thread.onSpinWait();
 
@@ -112,16 +108,16 @@ public class LanceClient extends Thread {
             volatile LanceMessage value = null;
 
             @Override
-            public LanceMessage resolve() {
+            public String resolve() {
                 while (value == null)
                     Thread.onSpinWait();
 
-                return value;
+                return value.getMessage();
             }
 
             @Override
             public boolean run(String line) {
-                LanceMessage lanceMessage = LanceMessage.getFromEncoded(lanceObject, line);
+                LanceMessage lanceMessage = LanceMessage.getFromEncoded(line);
 
                 if (lanceMessage == null) {
                     out.close();

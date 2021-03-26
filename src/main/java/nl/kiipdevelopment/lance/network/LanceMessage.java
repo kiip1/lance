@@ -6,12 +6,12 @@ import java.util.Base64;
 public class LanceMessage {
     private final int id;
     private final StatusCode code;
-    private final LanceObject<?> object;
+    private final String message;
 
-    public LanceMessage(int id, StatusCode code, LanceObject<?> object) {
+    public LanceMessage(int id, StatusCode code, String message) {
         this.id = id;
         this.code = code;
-        this.object = object;
+        this.message = message;
     }
 
     public int getId() {
@@ -22,8 +22,8 @@ public class LanceMessage {
         return code;
     }
 
-    public LanceObject<?> getObject() {
-        return object;
+    public String getMessage() {
+        return message;
     }
 
     public String getEncoded() {
@@ -32,18 +32,18 @@ public class LanceMessage {
 
     @Override
     public String toString() {
-        return id + " " + code.getId() + " " + encode(object.getAsString());
+        return id + " " + code.getId() + " " + encode(message);
     }
 
-    public static LanceMessage getFromEncoded(LanceObject<?> lanceObject, String encoded) {
+    public static LanceMessage getFromEncoded(String encoded) {
         try {
             String[] parts = decode(encoded).split(" ");
 
             int id = Integer.parseInt(parts[0]);
             StatusCode code = StatusCode.fromId(Integer.parseInt(parts[1]));
-            LanceObject<?> object = lanceObject.getFromString(decode(parts[2]));
+            String message = decode(parts[2]);
 
-            return new LanceMessage(id, code, object);
+            return new LanceMessage(id, code, message);
         } catch (Exception e) {
             System.out.println("Invalid message: " + e.getMessage());
         }
