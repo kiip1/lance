@@ -73,13 +73,11 @@ public class LanceClient extends Thread {
 
         int id = ThreadLocalRandom.current().nextInt();
 
-        System.out.println(id);
-
         out.println(new LanceMessage(
             id,
             StatusCode.OK,
             new LanceString(line)
-        ).getEncoded());
+        ));
     }
 
     public String getString(String key) {
@@ -99,7 +97,7 @@ public class LanceClient extends Thread {
             .setStatusCode(StatusCode.OK)
             .setObject(new LanceString("get " + key))
             .build()
-            .getEncoded()
+            .toString()
         );
 
         return listenerManager.resolve(new ResolvableListener<>() {

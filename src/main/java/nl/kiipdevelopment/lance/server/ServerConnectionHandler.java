@@ -51,7 +51,7 @@ public class ServerConnectionHandler extends Thread {
                     return;
                 }
 
-                out.println(CommandManager.handle(this, lanceMessage.getId(), lanceMessage).getEncoded());
+                out.println(CommandManager.handle(this, lanceMessage.getId(), lanceMessage).toString());
             }
 
             System.out.println("Closed connection from " + ipAndPort + ".");
@@ -68,7 +68,7 @@ public class ServerConnectionHandler extends Thread {
             ThreadLocalRandom.current().nextInt(),
             StatusCode.CLOSING,
             new LanceString(reason)
-        ).getEncoded());
+        ));
 
         out.close();
     }

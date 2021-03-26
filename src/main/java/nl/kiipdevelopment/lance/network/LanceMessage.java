@@ -26,18 +26,14 @@ public class LanceMessage {
         return object;
     }
 
-    public String getEncoded() {
-        return LanceMessage.encode(toString());
-    }
-
     @Override
     public String toString() {
         return id + " " + code.getId() + " " + encode(object.getAsString());
     }
 
-    public static LanceMessage getFromEncoded(LanceObject<?> lanceObject, String encoded) {
+    public static LanceMessage getFromEncoded(LanceObject<?> lanceObject, String string) {
         try {
-            String[] parts = decode(encoded).split(" ");
+            String[] parts = string.split(" ");
 
             int id = Integer.parseInt(parts[0]);
             StatusCode code = StatusCode.fromId(Integer.parseInt(parts[1]));

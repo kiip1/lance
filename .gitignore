@@ -1,4 +1,4 @@
 /.gradle/
 /build/
 /build/classes/java/main/
-/version.properties
+version.properties

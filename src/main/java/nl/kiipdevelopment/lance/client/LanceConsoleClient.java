@@ -34,7 +34,7 @@ public class LanceConsoleClient extends LanceClient {
                 while (socket == null || out == null || in == null || listenerManager == null)
                     Thread.onSpinWait();
 
-                System.out.println("Console client started on " + socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort());
+                System.out.println("Console client started on " + socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort() + ".");
 
                 listenerManager.listen(line -> {
                     LanceMessage lanceMessage = LanceMessage.getFromEncoded(new LanceString(), line);
@@ -45,7 +45,7 @@ public class LanceConsoleClient extends LanceClient {
                         return false;
                     }
 
-                    System.out.println("[" + lanceMessage.getCode() + "] [" + lanceMessage.getId() + "] " + lanceMessage.getObject().get());
+                    System.out.println(lanceMessage.getObject().get());
 
                     return false;
                 });
