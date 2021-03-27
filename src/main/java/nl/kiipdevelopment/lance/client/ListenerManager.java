@@ -3,11 +3,9 @@ package nl.kiipdevelopment.lance.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 public class ListenerManager extends Thread {
-    private final List<Listener> listenerList = new ArrayList<>();
+    private final ArrayList<Listener> listeners = new ArrayList<>();
     private final BufferedReader in;
 
     public ListenerManager(BufferedReader in) {
@@ -22,17 +20,17 @@ public class ListenerManager extends Thread {
             String line;
 
             while ((line = in.readLine()) != null) {
-                Iterator<Listener> listenerIterator = listenerList.iterator();
+                final ArrayList<Listener> tempListeners = (ArrayList<Listener>) listeners.clone();
 
-                while (listenerIterator.hasNext()) {
-                    Listener listener = listenerIterator.next();
-
+                for (Listener listener : tempListeners) {
                     boolean success = listener.run(line);
 
                     if (success)
-                        listenerIterator.remove();
+                        listeners.remove(listener);
                 }
             }
+
+            close();
         } catch (IOException e) {
             if (!e.getMessage().equals("Socket closed"))
                 e.printStackTrace();
@@ -40,16 +38,16 @@ public class ListenerManager extends Thread {
     }
 
     public void listen(Listener listener) {
-        listenerList.add(listener);
+        listeners.add(listener);
     }
 
     public <T> T resolve(ResolvableListener<T> listener) {
-        listenerList.add(listener);
+        listen(listener);
 
         return listener.resolve();
     }
 
     public void close() {
-        listenerList.clear();
+        listeners.clear();
     }
 }

@@ -1,6 +1,5 @@
 package nl.kiipdevelopment.lance.server.command.commands;
 
-import com.google.gson.JsonElement;
 import nl.kiipdevelopment.lance.network.LanceMessage;
 import nl.kiipdevelopment.lance.network.LanceMessageBuilder;
 import nl.kiipdevelopment.lance.network.StatusCode;
@@ -9,9 +8,9 @@ import nl.kiipdevelopment.lance.server.command.Command;
 import nl.kiipdevelopment.lance.server.storage.Storage;
 import nl.kiipdevelopment.lance.server.storage.StorageType;
 
-public class GetCommand extends Command {
-    public GetCommand() {
-        super("get", "Gets a value.");
+public class ExistsFileCommand extends Command {
+    public ExistsFileCommand() {
+        super("existsfile", "Checks if a key exists.");
     }
 
     @Override
@@ -23,15 +22,12 @@ public class GetCommand extends Command {
         if (args.length == 0) {
             builder
                 .setStatusCode(StatusCode.ERROR)
-                .setMessage("Usage: get <key>");
+                .setMessage("Usage: existsfile <key>");
         } else {
-            try (Storage<JsonElement> storage = Storage.getStorage(StorageType.JSON)) {
-                Object value = storage.get(args[0]);
+            String key = args[0];
 
-                if (value == null) builder
-                    .setStatusCode(StatusCode.ERROR)
-                    .setMessage("Value is not a JsonElement.");
-                else builder.setMessage(value.toString());
+            try (Storage<byte[]> storage = Storage.getStorage(StorageType.FILE)) {
+                builder.setMessage(storage.exists(key) ? "true" : "false");
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -2,6 +2,8 @@ package nl.kiipdevelopment.lance.configuration;
 
 import nl.kiipdevelopment.lance.server.storage.StorageType;
 
+import java.nio.file.Path;
+
 public class ConfigurationBuilder {
     private int maxRetries = DefaultConfiguration.maxRetries;
     private int retryTimeout = DefaultConfiguration.retryTimeout;
@@ -9,7 +11,7 @@ public class ConfigurationBuilder {
     private boolean passwordEnabled = DefaultConfiguration.passwordEnabled;
     private String password = DefaultConfiguration.password;
     private StorageType storageType = DefaultConfiguration.storageType;
-    private String storageLocation = DefaultConfiguration.storageLocation;
+    private Path storageLocation = DefaultConfiguration.storageLocation;
 
     public ConfigurationBuilder setMaxRetries(int maxRetries) {
         this.maxRetries = maxRetries;

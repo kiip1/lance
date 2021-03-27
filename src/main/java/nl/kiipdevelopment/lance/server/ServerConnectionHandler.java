@@ -35,13 +35,45 @@ public class ServerConnectionHandler extends Thread {
         try {
             String ipAndPort = socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
 
-            System.out.println("Accepted connection from " + ipAndPort + ".");
+            System.out.println("[" + getName() + "] " + "Accepted connection from " + ipAndPort + ".");
             server.connections.add(ipAndPort);
 
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            while (active) {
+            boolean authorised = true;
+
+            if (configuration.isPasswordEnabled()) {
+                authorised = false;
+
+                int id = ThreadLocalRandom.current().nextInt();
+
+                out.println(new LanceMessage(
+                    id,
+                    StatusCode.OK,
+                    "Authentication required."
+                ));
+
+                LanceMessage lanceMessage = LanceMessage.getFromString(in.readLine());
+
+                if (lanceMessage == null) {
+                    close("Invalid message.");
+
+                    return;
+                }
+
+                if (lanceMessage.getMessage().equals(configuration.getPassword())) {
+                    authorised = true;
+
+                    out.println(new LanceMessage(
+                        id,
+                        StatusCode.OK,
+                        "Access granted."
+                    ));
+                } else close("Incorrect password.");
+            }
+
+            if (authorised) while (active) {
                 LanceMessage lanceMessage = LanceMessage.getFromString(in.readLine());
 
                 if (lanceMessage == null) {
@@ -53,7 +85,7 @@ public class ServerConnectionHandler extends Thread {
                 out.println(CommandManager.handle(this, lanceMessage.getId(), lanceMessage).toString());
             }
 
-            System.out.println("Closed connection from " + ipAndPort + ".");
+            System.out.println("[" + getName() + "] " + "Closed connection from " + ipAndPort + ".");
             server.connections.remove(ipAndPort);
         } catch (IOException e) {
             e.printStackTrace();
@@ -61,10 +93,14 @@ public class ServerConnectionHandler extends Thread {
     }
 
     public void close(String reason) {
+        close(reason, ThreadLocalRandom.current().nextInt());
+    }
+
+    public void close(String reason, int id) {
         active = false;
 
         out.println(new LanceMessage(
-            ThreadLocalRandom.current().nextInt(),
+            id,
             StatusCode.CLOSING,
             reason
         ));

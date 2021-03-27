@@ -4,13 +4,11 @@ import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.configuration.ServerConfiguration;
 import nl.kiipdevelopment.lance.server.command.CommandManager;
 import nl.kiipdevelopment.lance.server.storage.Storage;
-import nl.kiipdevelopment.lance.server.storage.StorageException;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,20 +46,16 @@ public class LanceServer extends Thread {
 
     @Override
     public void run() {
-        try {
-            storage = configuration.getStorageType().getStorage(Path.of(configuration.getStorageLocation()));
-        } catch (IOException | StorageException e) {
-            System.err.println("Error happened while initializing storage");
-            e.printStackTrace();
-            return;
-        }
+        Storage.updateDefaultStorage(configuration.getStorageType(), configuration.getStorageLocation());
+
+        storage = Storage.getDefaultStorage();
         
         CommandManager.init();
 
         try {
             serverSocket = new ServerSocket(port, configuration.getBacklog(), InetAddress.getByName(host));
 
-            System.out.println("Server started on " + serverSocket.getInetAddress().getHostAddress() + ":" + serverSocket.getLocalPort());
+            System.out.println("[" + getName() + "] " + "Server started on " + serverSocket.getInetAddress().getHostAddress() + ":" + serverSocket.getLocalPort());
 
             while (active)
                 try {
@@ -71,7 +65,7 @@ public class LanceServer extends Thread {
                     handlers.add(handler);
                 } catch (SocketException e) {
                     if (e.getMessage().equals("Socket closed"))
-                        System.out.println("Server shut down.");
+                        System.out.println("[" + getName() + "] " + "Server shut down.");
                     else e.printStackTrace();
                 }
         } catch (IOException e) {

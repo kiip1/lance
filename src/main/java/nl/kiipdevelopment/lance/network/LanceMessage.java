@@ -2,6 +2,7 @@ package nl.kiipdevelopment.lance.network;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Objects;
 
 public class LanceMessage {
     private final int id;
@@ -41,17 +42,25 @@ public class LanceMessage {
 
             return new LanceMessage(id, code, message);
         } catch (Exception e) {
-            System.out.println("Invalid message: " + e.getMessage());
+            System.out.println("[" + Thread.currentThread().getName() + "] " + "Invalid message: " + e.getMessage());
         }
 
         return null;
     }
 
     private static String encode(String decoded) {
-        return Base64.getEncoder().encodeToString(decoded.getBytes(StandardCharsets.UTF_8));
+        return Base64
+            .getEncoder()
+            .encodeToString(Objects.requireNonNullElse(
+                decoded,
+                "null"
+            ).getBytes(StandardCharsets.UTF_8));
     }
 
     private static String decode(String encoded) {
+        if (encoded == null)
+            return "null";
+
         return new String(Base64.getDecoder().decode(encoded));
     }
 }

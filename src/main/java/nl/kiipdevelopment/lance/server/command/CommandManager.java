@@ -3,10 +3,7 @@ package nl.kiipdevelopment.lance.server.command;
 import nl.kiipdevelopment.lance.network.LanceMessage;
 import nl.kiipdevelopment.lance.network.StatusCode;
 import nl.kiipdevelopment.lance.server.ServerConnectionHandler;
-import nl.kiipdevelopment.lance.server.command.commands.ConnectionsCommand;
-import nl.kiipdevelopment.lance.server.command.commands.GetCommand;
-import nl.kiipdevelopment.lance.server.command.commands.HelpCommand;
-import nl.kiipdevelopment.lance.server.command.commands.StopCommand;
+import nl.kiipdevelopment.lance.server.command.commands.*;
 
 import java.util.*;
 
@@ -16,8 +13,13 @@ public class CommandManager {
     public static void init() {
         CommandManager.register(
             new ConnectionsCommand(),
+            new ExistsCommand(),
+            new ExistsFileCommand(),
             new GetCommand(),
+            new GetFileCommand(),
             new HelpCommand(),
+            new SetCommand(),
+            new SetFileCommand(),
             new StopCommand()
         );
     }

@@ -2,12 +2,11 @@ package nl.kiipdevelopment.lance;
 
 import nl.kiipdevelopment.lance.client.LanceClient;
 import nl.kiipdevelopment.lance.client.LanceConsoleClient;
+import nl.kiipdevelopment.lance.configuration.ConfigurationBuilder;
 import nl.kiipdevelopment.lance.server.LanceServer;
 
-import java.util.concurrent.ExecutionException;
-
 public class Main {
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+    public static void main(String[] args) {
         System.out.println(
             """
                 ##
@@ -30,15 +29,18 @@ public class Main {
             """
         );
 
-        new LanceServer().start();
-        new LanceConsoleClient().start();
+        new LanceServer(new ConfigurationBuilder().setPassword("test").buildServerConfiguration()).start();
 
-        // start of test
-        LanceClient client = new LanceClient();
+        //start test
+        LanceClient lanceClient = new LanceConsoleClient(new ConfigurationBuilder().setPassword("test").build());
 
-        client.start();
+        lanceClient.start();
 
-        System.out.println(client.getStringAsync("test").get());
-        // end of test
+        lanceClient.setString("abc", "123");
+
+        lanceClient.getString("abc");
+
+        lanceClient.getInteger("abc");
+        //end test
     }
 }

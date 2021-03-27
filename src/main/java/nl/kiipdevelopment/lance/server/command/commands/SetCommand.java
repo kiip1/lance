@@ -1,6 +1,7 @@
 package nl.kiipdevelopment.lance.server.command.commands;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import nl.kiipdevelopment.lance.network.LanceMessage;
 import nl.kiipdevelopment.lance.network.LanceMessageBuilder;
 import nl.kiipdevelopment.lance.network.StatusCode;
@@ -9,9 +10,11 @@ import nl.kiipdevelopment.lance.server.command.Command;
 import nl.kiipdevelopment.lance.server.storage.Storage;
 import nl.kiipdevelopment.lance.server.storage.StorageType;
 
-public class GetCommand extends Command {
-    public GetCommand() {
-        super("get", "Gets a value.");
+import java.util.Arrays;
+
+public class SetCommand extends Command {
+    public SetCommand() {
+        super("set", "Sets a key to a value.");
     }
 
     @Override
@@ -20,18 +23,24 @@ public class GetCommand extends Command {
 
         builder.setId(id).setStatusCode(StatusCode.OK);
 
-        if (args.length == 0) {
+        if (args.length < 2) {
             builder
                 .setStatusCode(StatusCode.ERROR)
-                .setMessage("Usage: get <key>");
+                .setMessage("Usage: set <key> <value>");
         } else {
-            try (Storage<JsonElement> storage = Storage.getStorage(StorageType.JSON)) {
-                Object value = storage.get(args[0]);
+            String key = args[0];
+            String value = String.join(" ", Arrays.copyOfRange(
+                args,
+                1,
+                args.length
+            ));
 
-                if (value == null) builder
-                    .setStatusCode(StatusCode.ERROR)
-                    .setMessage("Value is not a JsonElement.");
-                else builder.setMessage(value.toString());
+            try (Storage<JsonElement> storage = Storage.getStorage(StorageType.JSON)) {
+                JsonElement jsonElement = JsonParser.parseString(value);
+
+                storage.set(key, jsonElement);
+
+                builder.setMessage(jsonElement.toString());
             } catch (Exception e) {
                 e.printStackTrace();
             }
