@@ -1,7 +1,5 @@
 package nl.kiipdevelopment.lance;
 
-import com.google.gson.JsonPrimitive;
-import nl.kiipdevelopment.lance.client.LanceClient;
 import nl.kiipdevelopment.lance.client.LanceConsoleClient;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.server.LanceServer;
@@ -77,13 +75,5 @@ public class Main {
 
         if (clientIpAndPort != null)
             new LanceConsoleClient(clientIpAndPort[0], Integer.parseInt(clientIpAndPort[1])).start();
-        lanceClient.start();
-    
-        System.out.println(lanceClient.get("hello").getAsJson());
-        System.out.println(lanceClient.get("hello.hoi").getAsJson());
-    
-        lanceClient.set("hello", new JsonPrimitive("HELLO"));
-        
-        //end test
     }
 }
