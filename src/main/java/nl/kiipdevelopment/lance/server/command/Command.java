@@ -1,6 +1,9 @@
 package nl.kiipdevelopment.lance.server.command;
 
+import com.google.gson.JsonElement;
 import nl.kiipdevelopment.lance.network.LanceMessage;
+import nl.kiipdevelopment.lance.network.LanceMessageBuilder;
+import nl.kiipdevelopment.lance.network.StatusCode;
 import nl.kiipdevelopment.lance.server.ServerConnectionHandler;
 
 import java.util.ArrayList;
@@ -18,5 +21,9 @@ public abstract class Command {
         this.description = description;
     }
 
-    public abstract LanceMessage execute(ServerConnectionHandler handler, int id, String trigger, String[] args);
+    public abstract LanceMessage execute(ServerConnectionHandler handler, int id, String trigger, JsonElement json, String[] args);
+    
+    public LanceMessage getInternalErrorMessage(int id) {
+        return new LanceMessage(id, StatusCode.INTERNAL_ERROR);
+    }
 }

@@ -2,6 +2,7 @@ package nl.kiipdevelopment.lance.server;
 
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.configuration.ServerConfiguration;
+import nl.kiipdevelopment.lance.network.StatusCode;
 import nl.kiipdevelopment.lance.server.command.CommandManager;
 import nl.kiipdevelopment.lance.server.storage.Storage;
 
@@ -18,7 +19,7 @@ public class LanceServer extends Thread {
     private final int port;
 
     private ServerSocket serverSocket;
-    private Storage<?> storage;
+    public Storage<?> storage;
 
     public final List<ServerConnectionHandler> handlers = new ArrayList<>();
     public final List<String> connections = new ArrayList<>();
@@ -80,7 +81,7 @@ public class LanceServer extends Thread {
             serverSocket.close();
 
             for (ServerConnectionHandler handler : handlers)
-                handler.close("Server closing.");
+                handler.close(StatusCode.CLOSING);
         } catch (IOException e) {
             e.printStackTrace();
         }

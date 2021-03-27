@@ -1,12 +1,12 @@
 package nl.kiipdevelopment.lance.network;
 
-import nl.kiipdevelopment.lance.server.command.Command;
+import com.google.gson.JsonElement;
 
 public class LanceMessageBuilder {
     private int id;
     private StatusCode code;
     private String message;
-    private Command command;
+    private JsonElement json;
 
     public LanceMessageBuilder setId(int id) {
         this.id = id;
@@ -25,8 +25,14 @@ public class LanceMessageBuilder {
 
         return this;
     }
+    
+    public LanceMessageBuilder setJson(JsonElement json) {
+        this.json = json;
+        
+        return this;
+    }
 
     public LanceMessage build() {
-        return new LanceMessage(id, code, message);
+        return new LanceMessage(id, code, message, json);
     }
 }

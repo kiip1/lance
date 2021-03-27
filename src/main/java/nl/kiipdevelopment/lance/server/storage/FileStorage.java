@@ -17,7 +17,7 @@ public class FileStorage implements Storage<byte[]> {
 	}
 	
 	@Override
-	public byte[] get(@NotNull String key) {
+	public byte[] get(@NotNull String key) throws Exception {
 		File dir = location.toFile();
 
 		dir.mkdirs();
@@ -30,11 +30,7 @@ public class FileStorage implements Storage<byte[]> {
 
 			for (File file : files)
 				if (file.getName().equals(key)) {
-					try {
-						return Files.readAllBytes(file.toPath());
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					return Files.readAllBytes(file.toPath());
 				}
 		}
 
@@ -42,12 +38,12 @@ public class FileStorage implements Storage<byte[]> {
 	}
 	
 	@Override
-	public boolean exists(String key) {
+	public boolean exists(String key) throws Exception {
 		return get(key) != null;
 	}
 	
 	@Override
-	public void set(@NotNull String key, byte[] value) {
+	public void set(@NotNull String key, byte[] value) throws Exception {
 		File dir = location.toFile();
 
 		dir.mkdirs();

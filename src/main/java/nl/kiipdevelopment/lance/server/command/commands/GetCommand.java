@@ -6,8 +6,6 @@ import nl.kiipdevelopment.lance.network.LanceMessageBuilder;
 import nl.kiipdevelopment.lance.network.StatusCode;
 import nl.kiipdevelopment.lance.server.ServerConnectionHandler;
 import nl.kiipdevelopment.lance.server.command.Command;
-import nl.kiipdevelopment.lance.server.storage.Storage;
-import nl.kiipdevelopment.lance.server.storage.StorageType;
 
 public class GetCommand extends Command {
     public GetCommand() {
@@ -15,25 +13,26 @@ public class GetCommand extends Command {
     }
 
     @Override
-    public LanceMessage execute(ServerConnectionHandler handler, int id, String trigger, String[] args) {
+    public LanceMessage execute(ServerConnectionHandler handler, int id, String trigger, JsonElement json, String[] args) {
         LanceMessageBuilder builder = new LanceMessageBuilder();
 
         builder.setId(id).setStatusCode(StatusCode.OK);
 
         if (args.length == 0) {
-            builder
-                .setStatusCode(StatusCode.ERROR)
-                .setMessage("Usage: get <key>");
+            builder.setStatusCode(StatusCode.ERROR);
+            builder.setMessage("Usage: get <key>");
         } else {
-            try (Storage<JsonElement> storage = Storage.getStorage(StorageType.JSON)) {
-                Object value = storage.get(args[0]);
-
-                if (value == null) builder
-                    .setStatusCode(StatusCode.ERROR)
-                    .setMessage("Value is not a JsonElement.");
-                else builder.setMessage(value.toString());
+            try {
+                Object value = handler.server.storage.get(args[0]);
+                
+                if (value instanceof JsonElement) {
+                    builder.setJson((JsonElement) value);
+                } else {
+                    builder.setMessage(value == null ? null : new String((byte[]) value));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
+                return getInternalErrorMessage(id);
             }
         }
 

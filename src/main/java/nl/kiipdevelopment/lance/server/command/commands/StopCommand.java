@@ -1,5 +1,6 @@
 package nl.kiipdevelopment.lance.server.command.commands;
 
+import com.google.gson.JsonElement;
 import nl.kiipdevelopment.lance.network.LanceMessage;
 import nl.kiipdevelopment.lance.network.LanceMessageBuilder;
 import nl.kiipdevelopment.lance.network.StatusCode;
@@ -12,7 +13,7 @@ public class StopCommand extends Command {
     }
 
     @Override
-    public LanceMessage execute(ServerConnectionHandler handler, int id, String trigger, String[] args) {
+    public LanceMessage execute(ServerConnectionHandler handler, int id, String trigger, JsonElement json, String[] args) {
         handler.server.shutdown();
 
         return new LanceMessageBuilder()

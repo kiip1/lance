@@ -1,5 +1,6 @@
 package nl.kiipdevelopment.lance.client;
 
+import com.google.gson.JsonElement;
 import nl.kiipdevelopment.lance.configuration.Configuration;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.network.LanceMessage;
@@ -8,7 +9,6 @@ import nl.kiipdevelopment.lance.network.StatusCode;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
@@ -65,13 +65,13 @@ public class LanceClient extends Thread implements AutoCloseable {
 
                 if (lanceMessage == null)
                     out.close();
-                else if (lanceMessage.getMessage().equals("Authentication required.")) {
+                else if (lanceMessage.getCode() == StatusCode.AUTH_REQUIRED) {
                     out.println(new LanceMessage(
                         lanceMessage.getId(),
                         StatusCode.OK,
                         configuration.getPassword()
                     ));
-                } else if (lanceMessage.getMessage().equals("Access granted.")) {
+                } else if (lanceMessage.getCode() == StatusCode.ACCESS_GRANTED) {
                     authorised = true;
 
                     return true;
@@ -107,100 +107,74 @@ public class LanceClient extends Thread implements AutoCloseable {
             line
         ));
     }
-
-    public String getString(String key) {
-        return get(key);
-    }
-
-    public Future<String> getStringAsync(String key) {
-        return Executors
-            .newSingleThreadExecutor()
-            .submit(() -> getString(key));
-    }
-
-    public void setString(String key, String value) {
-        set(key, value);
-    }
-
-    public boolean getBoolean(String key) {
-        String value = get(key);
-
-        if (value.equals("true") || value.equals("false"))
-            return value.equals("true");
-        else throw new NullPointerException("Not a boolean.");
-    }
-
-    public Future<Boolean> getBooleanAsync(String key) {
-        return Executors
-            .newSingleThreadExecutor()
-            .submit(() -> getBoolean(key));
-    }
-
-    public void setBoolean(String key, boolean value) {
-        set(key, Boolean.toString(value));
-    }
-
-    public int getInteger(String key) {
-        String value = get(key);
-
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            throw new NullPointerException("Not an integer.");
-        }
-    }
-
-    public Future<Integer> getIntegerAsync(String key) {
-        return Executors
-            .newSingleThreadExecutor()
-            .submit(() -> getInteger(key));
-    }
-
-    public void setInteger(String key, int value) {
-        set(key, Integer.toString(value));
-    }
-
-    public float getFloat(String key) {
-        String value = get(key);
-
-        try {
-            return Float.parseFloat(value);
-        } catch (NumberFormatException e) {
-            throw new NullPointerException("Not a float.");
-        }
-    }
-
-    public Future<Float> getFloatAsync(String key) {
-        return Executors
-            .newSingleThreadExecutor()
-            .submit(() -> getFloat(key));
-    }
-
-    public void setFloat(String key, float value) {
-        set(key, Float.toString(value));
-    }
-
-    public byte[] getFile(String key) {
-        String value = get(key, "getfile");
-
-        return value.getBytes(StandardCharsets.UTF_8);
-    }
-
-    public Future<byte[]> getFileAsync(String key) {
-        return Executors
-            .newSingleThreadExecutor()
-            .submit(() -> getFile(key));
-    }
-
-    public void setFile(String key, byte[] value) {
-        set(key, new String(value), "setfile");
-    }
-
-    private String get(String key) {
-        return get(key, "get");
+    
+    /**
+     * Writes the contents of a file. Be aware that if the server does have a
+     * json based storage instead of file based, the string will be saved as json.
+     *
+     * @param key The path to the file
+     * @param value The string value to write to the file
+     */
+    public void setFile(String key, String value) {
+        set(key, value, null);
     }
     
-    private String get(String key, String command) {
+    /**
+     * Sets the value on the key. Be aware that if the server does have a
+     * file based storage instead of json based, the json will be saved as string.
+     *
+     * @param key The path, separated by dots
+     * @param value The json element to set
+     */
+    public void set(String key, JsonElement value) {
+        set(key, null, value);
+    }
+    
+    /**
+     * Retrieves the contents of a file. Be aware that if the server does have
+     * a json based storage instead of file based, this will be null.
+     *
+     * @param key The path to the file
+     * @return The contents of the file, or null if either the file is not found or the storage is json
+     */
+    public String getFile(String key) {
+        return get(key).getAsFile();
+    }
+    
+    /**
+     * Retrieves a json element. Be aware that if the server does have a
+     * a file based storage instead of json based, this will be null.
+     *
+     * @param key The path, separated by dots
+     * @return The json element at the path, or null if either the path does not exist or the storage is files
+     */
+    public JsonElement getJson(String key) {
+        return get(key).getAsJson();
+    }
+    
+    /**
+     * Same as #get(String) but non-blocking, using a future.
+     *
+     * @param key The path, separated by dots
+     * @return A future for the DataValue at the path
+     *
+     * @see DataValue
+     */
+    public Future<DataValue> getAsync(String key) {
+        return Executors
+                .newSingleThreadExecutor()
+                .submit(() -> get(key));
+    }
+    
+    /**
+     * Retrieves a DataValue, being a json element or a string (file contents).
+     *
+     * @param key The path, separated by dots
+     * @return The DataValue at the path
+     *
+     * @see DataValue
+     */
+    public DataValue get(String key) {
         while (socket == null || out == null || in == null || listenerManager == null || !authorised)
             Thread.onSpinWait();
 
@@ -209,7 +183,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         out.println(new LanceMessageBuilder()
             .setId(id)
             .setStatusCode(StatusCode.OK)
-            .setMessage(command + " " + key)
+            .setMessage("get" + " " + key)
             .build()
             .toString()
         );
@@ -218,11 +192,11 @@ public class LanceClient extends Thread implements AutoCloseable {
             volatile LanceMessage value = null;
 
             @Override
-            public String resolve() {
+            public DataValue resolve() {
                 while (value == null)
                     Thread.onSpinWait();
 
-                return value.getMessage();
+                return value.asDataValue();
             }
 
             @Override
@@ -246,11 +220,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         });
     }
 
-    private void set(String key, String value) {
-        set(key, value, "set");
-    }
-
-    private void set(String key, String value, String command) {
+    private void set(String key, String value, JsonElement json) {
         while (socket == null || out == null || in == null || listenerManager == null || !authorised)
             Thread.onSpinWait();
 
@@ -259,7 +229,8 @@ public class LanceClient extends Thread implements AutoCloseable {
         out.println(new LanceMessageBuilder()
             .setId(id)
             .setStatusCode(StatusCode.OK)
-            .setMessage(command + " " + key + " " + value)
+            .setMessage("set " + key + " " + value)
+            .setJson(json)
             .build()
             .toString()
         );

@@ -34,57 +34,59 @@ public class ServerConnectionHandler extends Thread {
     public void run() {
         try {
             String ipAndPort = socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
-
+    
             System.out.println("[" + getName() + "] " + "Accepted connection from " + ipAndPort + ".");
             server.connections.add(ipAndPort);
-
+    
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
+    
             boolean authorised = true;
-
+    
             if (configuration.isPasswordEnabled()) {
                 authorised = false;
-
+        
                 int id = ThreadLocalRandom.current().nextInt();
-
+        
                 out.println(new LanceMessage(
-                    id,
-                    StatusCode.OK,
-                    "Authentication required."
+                        id,
+                        StatusCode.AUTH_REQUIRED
                 ));
-
+        
                 LanceMessage lanceMessage = LanceMessage.getFromString(in.readLine());
-
+        
                 if (lanceMessage == null) {
-                    close("Invalid message.");
-
+                    close(StatusCode.INVALID_MESSAGE);
+            
                     return;
                 }
-
+        
                 if (lanceMessage.getMessage().equals(configuration.getPassword())) {
                     authorised = true;
-
+            
                     out.println(new LanceMessage(
-                        id,
-                        StatusCode.OK,
-                        "Access granted."
+                            id,
+                            StatusCode.ACCESS_GRANTED
                     ));
-                } else close("Incorrect password.");
+                } else close(StatusCode.INTERNAL_ERROR);
             }
-
+    
             if (authorised) while (active) {
                 LanceMessage lanceMessage = LanceMessage.getFromString(in.readLine());
-
+        
                 if (lanceMessage == null) {
-                    close("Invalid message.");
-
+                    close(StatusCode.INVALID_MESSAGE);
+            
                     return;
                 }
-
-                out.println(CommandManager.handle(this, lanceMessage.getId(), lanceMessage).toString());
+        
+                try {
+                    out.println(CommandManager.handle(this, lanceMessage.getId(), lanceMessage).toString());
+                } catch (Exception e) {
+                    close(StatusCode.INTERNAL_ERROR);
+                }
             }
-
+    
             System.out.println("[" + getName() + "] " + "Closed connection from " + ipAndPort + ".");
             server.connections.remove(ipAndPort);
         } catch (IOException e) {
@@ -92,16 +94,15 @@ public class ServerConnectionHandler extends Thread {
         }
     }
 
-    public void close(String reason) {
+    public void close(StatusCode reason) {
         close(reason, ThreadLocalRandom.current().nextInt());
     }
 
-    public void close(String reason, int id) {
+    public void close(StatusCode reason, int id) {
         active = false;
 
         out.println(new LanceMessage(
             id,
-            StatusCode.CLOSING,
             reason
         ));
 

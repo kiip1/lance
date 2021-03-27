@@ -14,12 +14,9 @@ public class CommandManager {
         CommandManager.register(
             new ConnectionsCommand(),
             new ExistsCommand(),
-            new ExistsFileCommand(),
             new GetCommand(),
-            new GetFileCommand(),
             new HelpCommand(),
             new SetCommand(),
-            new SetFileCommand(),
             new StopCommand()
         );
     }
@@ -41,6 +38,8 @@ public class CommandManager {
     }
 
     public static LanceMessage handle(ServerConnectionHandler handler, int id, LanceMessage lanceMessage) {
+        if (!lanceMessage.hasMessage()) return new LanceMessage(id, StatusCode.ERROR, "Not a command");
+        
         String[] parts = lanceMessage.getMessage().split(" ");
 
         String trigger = parts[0];
@@ -49,7 +48,7 @@ public class CommandManager {
         Command command = commandMap.get(trigger);
 
         if (command == null) return unknownCommand(id);
-        else return command.execute(handler, id, trigger, args);
+        else return command.execute(handler, id, trigger, lanceMessage.getJson(), args);
     }
 
     public static Map<String, Command> getCommandMap() {

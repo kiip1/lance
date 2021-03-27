@@ -3,11 +3,15 @@ package nl.kiipdevelopment.lance.server.storage;
 import java.nio.file.Path;
 
 public interface Storage<V> extends AutoCloseable {
-	V get(String key);
+	V get(String key) throws Exception;
 
-	void set(String key, V value);
+	void set(String key, V value) throws Exception;
 	
-	boolean exists(String key);
+	boolean exists(String key) throws Exception;
+	
+	default boolean isJson() {
+		return false;
+	}
 
 	static void updateDefaultStorage(StorageType type, Path location) {
 		StorageHelper.updateDefaultStorage(type, location);
