@@ -1,5 +1,7 @@
 package nl.kiipdevelopment.lance.client;
 
+import nl.kiipdevelopment.lance.network.LanceMessage;
+
 public interface Listener {
-    boolean run(String line);
+    boolean run(LanceMessage message);
 }

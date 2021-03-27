@@ -1,5 +1,7 @@
 package nl.kiipdevelopment.lance.client;
 
+import nl.kiipdevelopment.lance.network.LanceMessage;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,10 +22,12 @@ public class ListenerManager extends Thread {
             String line;
 
             while ((line = in.readLine()) != null) {
+                @SuppressWarnings("unchecked")
                 final ArrayList<Listener> tempListeners = (ArrayList<Listener>) listeners.clone();
 
                 for (Listener listener : tempListeners) {
-                    boolean success = listener.run(line);
+                    LanceMessage lanceMessage = LanceMessage.getFromString(line);
+                    boolean success = listener.run(lanceMessage);
 
                     if (success)
                         listeners.remove(listener);
@@ -41,10 +45,10 @@ public class ListenerManager extends Thread {
         listeners.add(listener);
     }
 
-    public <T> T resolve(ResolvableListener<T> listener) {
+    public <T> T resolve(LanceClient client, ResolvableListener<T> listener) throws ErrorStatusException {
         listen(listener);
-
-        return listener.resolve();
+        
+        return listener.resolve(client);
     }
 
     public void close() {

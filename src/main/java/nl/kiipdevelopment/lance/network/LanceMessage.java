@@ -2,7 +2,6 @@ package nl.kiipdevelopment.lance.network;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import nl.kiipdevelopment.lance.client.DataValue;
 

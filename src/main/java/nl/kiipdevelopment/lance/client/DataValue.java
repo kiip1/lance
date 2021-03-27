@@ -13,6 +13,11 @@ public class DataValue {
 	private final String stringValue;
 	private final JsonElement jsonValue;
 	
+	public DataValue() {
+		this.stringValue = null;
+		this.jsonValue = null;
+	}
+	
 	public DataValue(String stringValue) {
 		this.stringValue = stringValue;
 		this.jsonValue = null;

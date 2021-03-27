@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 
 public class LanceClient extends Thread implements AutoCloseable {
     private final Configuration configuration;
@@ -25,6 +26,8 @@ public class LanceClient extends Thread implements AutoCloseable {
 
     private int retries = 0;
     private boolean authorised = false;
+    private StatusCode lastStatus = StatusCode.OK;
+    private Consumer<StatusCode> errorHandler = (code) -> {};
 
     public LanceClient() {
         this(DefaultConfiguration.HOST, DefaultConfiguration.PORT, DefaultConfiguration.getDefaultConfiguration());
@@ -60,9 +63,7 @@ public class LanceClient extends Thread implements AutoCloseable {
 
             listenerManager.start();
 
-            if (configuration.isPasswordEnabled()) listenerManager.listen(line -> {
-                LanceMessage lanceMessage = LanceMessage.getFromString(line);
-
+            if (configuration.isPasswordEnabled()) listenerManager.listen(lanceMessage -> {
                 if (lanceMessage == null)
                     out.close();
                 else if (lanceMessage.getCode() == StatusCode.AUTH_REQUIRED) {
@@ -95,7 +96,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         }
     }
 
-    public void execute(String line) {
+    protected void execute(String line) {
         while (socket == null || out == null || in == null || listenerManager == null || !authorised)
             Thread.onSpinWait();
 
@@ -111,6 +112,7 @@ public class LanceClient extends Thread implements AutoCloseable {
     /**
      * Writes the contents of a file. Be aware that if the server does have a
      * json based storage instead of file based, the string will be saved as json.
+     * If something goes wrong in the process (shouldn't happen), the error handler is invoked.
      *
      * @param key The path to the file
      * @param value The string value to write to the file
@@ -136,6 +138,7 @@ public class LanceClient extends Thread implements AutoCloseable {
     /**
      * Sets the value on the key. Be aware that if the server does have a
      * file based storage instead of json based, the json will be saved as string.
+     * If something goes wrong in the process (shouldn't happen), the error handler is invoked.
      *
      * @param key The path, separated by dots
      * @param value The json element to set
@@ -161,6 +164,7 @@ public class LanceClient extends Thread implements AutoCloseable {
     /**
      * Retrieves the contents of a file. Be aware that if the server does have
      * a json based storage instead of file based, this will be null.
+     * If something goes wrong in the process (shouldn't happen), the error handler is invoked.
      *
      * @param key The path to the file
      * @return The contents of the file, or null if either the file is not found or the storage is json
@@ -172,6 +176,7 @@ public class LanceClient extends Thread implements AutoCloseable {
     /**
      * Retrieves a json element. Be aware that if the server does have a
      * a file based storage instead of json based, this will be null.
+     * If something goes wrong in the process (shouldn't happen), the error handler is invoked.
      *
      * @param key The path, separated by dots
      * @return The json element at the path, or null if either the path does not exist or the storage is files
@@ -196,6 +201,7 @@ public class LanceClient extends Thread implements AutoCloseable {
     
     /**
      * Retrieves a DataValue, being a json element or a string (file contents).
+     * If something goes wrong in the process (shouldn't happen), the error handler is invoked.
      *
      * @param key The path, separated by dots
      * @return The DataValue at the path
@@ -215,8 +221,13 @@ public class LanceClient extends Thread implements AutoCloseable {
             .build()
             .toString()
         );
-
-        return listenerManager.resolve(new ResolvableListener<>(id, out, LanceMessage::asDataValue));
+        
+        try {
+            return listenerManager.resolve(this, new ResolvableListener<>(id, out, LanceMessage::asDataValue));
+        } catch (ErrorStatusException e) {
+            errorHandler.accept(e.getStatusCode());
+            return new DataValue();
+        }
     }
     
     /**
@@ -233,6 +244,7 @@ public class LanceClient extends Thread implements AutoCloseable {
     
     /**
      * Checks if a key exists. Works on both json and file based storage.
+     * If something goes wrong in the process (shouldn't happen), the error handler is invoked.
      *
      * @param key The path, separated by dots
      * @return Whether the key exists or not
@@ -250,8 +262,13 @@ public class LanceClient extends Thread implements AutoCloseable {
                 .build()
                 .toString()
         );
-    
-        return listenerManager.resolve(new ResolvableListener<>(id, out, (value) -> value.getMessage().equals("true")));
+        
+        try {
+            return listenerManager.resolve(this, new ResolvableListener<>(id, out, (value) -> value.getMessage().equals("true")));
+        } catch (ErrorStatusException e) {
+            errorHandler.accept(e.getStatusCode());
+            return false;
+        }
     }
 
     private boolean set(String key, String value, JsonElement json) {
@@ -269,9 +286,26 @@ public class LanceClient extends Thread implements AutoCloseable {
             .toString()
         );
         
-        return listenerManager.resolve(new ResolvableListener<>(id, out, (returnValue) -> returnValue.getCode() == StatusCode.OK));
+        try {
+            return listenerManager.resolve(this, new ResolvableListener<>(id, out, (returnValue) -> returnValue.getCode() == StatusCode.OK));
+        } catch (ErrorStatusException e) {
+            errorHandler.accept(e.getStatusCode());
+            return false;
+        }
     }
-
+    
+    void setLastStatus(StatusCode lastStatus) {
+        this.lastStatus = lastStatus;
+    }
+    
+    public StatusCode getLastStatus() {
+        return lastStatus;
+    }
+    
+    public void setErrorHandler(Consumer<StatusCode> errorHandler) {
+        this.errorHandler = errorHandler;
+    }
+    
     @Override
     public void close() {
         try {

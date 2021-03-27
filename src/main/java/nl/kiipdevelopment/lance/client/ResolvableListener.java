@@ -1,6 +1,7 @@
 package nl.kiipdevelopment.lance.client;
 
 import nl.kiipdevelopment.lance.network.LanceMessage;
+import nl.kiipdevelopment.lance.network.StatusCode;
 
 import java.io.PrintWriter;
 import java.util.function.Function;
@@ -18,17 +19,21 @@ public class ResolvableListener<T> implements Listener {
         this.resolver = resolver;
     }
     
-    public T resolve() {
+    public T resolve(LanceClient client) throws ErrorStatusException {
         while (value == null)
             Thread.onSpinWait();
     
+        client.setLastStatus(value.getCode());
+        
+        if (value.getCode() != StatusCode.OK) {
+            throw new ErrorStatusException(value.getCode());
+        }
+        
         return resolver.apply(value);
     }
     
     @Override
-    public boolean run(String line) {
-        LanceMessage lanceMessage = LanceMessage.getFromString(line);
-        
+    public boolean run(LanceMessage lanceMessage) {
         if (lanceMessage == null) {
             out.close();
             
