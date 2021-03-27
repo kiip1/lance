@@ -114,9 +114,23 @@ public class LanceClient extends Thread implements AutoCloseable {
      *
      * @param key The path to the file
      * @param value The string value to write to the file
+     * @return Whether the set was successful or not
      */
-    public void setFile(String key, String value) {
-        set(key, value, null);
+    public boolean setFile(String key, String value) {
+        return set(key, value, null);
+    }
+    
+    /**
+     * Same as #setFile(String, String) but non-blocking, using a future.
+     *
+     * @param key The path to the file
+     * @param value The string value to write to the file
+     * @return A future for whether the set was successful or not
+     */
+    public Future<Boolean> setFileAsync(String key, String value) {
+        return Executors
+                .newSingleThreadExecutor()
+                .submit(() -> setFile(key, value));
     }
     
     /**
@@ -125,9 +139,23 @@ public class LanceClient extends Thread implements AutoCloseable {
      *
      * @param key The path, separated by dots
      * @param value The json element to set
+     * @return Whether the set was successful or not
      */
-    public void set(String key, JsonElement value) {
-        set(key, null, value);
+    public boolean setJson(String key, JsonElement value) {
+        return set(key, null, value);
+    }
+    
+    /**
+     * Same as #setFile(String, JsonElement) but non-blocking, using a future.
+     *
+     * @param key The path to the file
+     * @param value The string value to write to the file
+     * @return A future for whether the set was successful or not
+     */
+    public Future<Boolean> setJsonAsync(String key, JsonElement value) {
+        return Executors
+                .newSingleThreadExecutor()
+                .submit(() -> setJson(key, value));
     }
     
     /**
@@ -192,6 +220,18 @@ public class LanceClient extends Thread implements AutoCloseable {
     }
     
     /**
+     * Same as #exists(String) but non-blocking, using a future.
+     *
+     * @param key The path, separated by dots
+     * @return A future for whether the key exists or not
+     */
+    public Future<Boolean> existsAsync(String key) {
+        return Executors
+                .newSingleThreadExecutor()
+                .submit(() -> exists(key));
+    }
+    
+    /**
      * Checks if a key exists. Works on both json and file based storage.
      *
      * @param key The path, separated by dots
@@ -214,7 +254,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         return listenerManager.resolve(new ResolvableListener<>(id, out, (value) -> value.getMessage().equals("true")));
     }
 
-    private void set(String key, String value, JsonElement json) {
+    private boolean set(String key, String value, JsonElement json) {
         while (socket == null || out == null || in == null || listenerManager == null || !authorised)
             Thread.onSpinWait();
 
@@ -228,6 +268,8 @@ public class LanceClient extends Thread implements AutoCloseable {
             .build()
             .toString()
         );
+        
+        return listenerManager.resolve(new ResolvableListener<>(id, out, (returnValue) -> returnValue.getCode() == StatusCode.OK));
     }
 
     @Override
