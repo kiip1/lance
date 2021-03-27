@@ -5,6 +5,10 @@ import nl.kiipdevelopment.lance.client.LanceConsoleClient;
 import nl.kiipdevelopment.lance.configuration.ConfigurationBuilder;
 import nl.kiipdevelopment.lance.server.LanceServer;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 public class Main {
     public static void main(String[] args) {
         System.out.println(
@@ -36,11 +40,13 @@ public class Main {
 
         lanceClient.start();
 
-        lanceClient.setString("abc", "123");
+        try {
+            lanceClient.setFile("test", Files.readAllBytes(Path.of("build.gradle")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        lanceClient.getString("abc");
-
-        lanceClient.getInteger("abc");
+        lanceClient.getFile("test");
         //end test
     }
 }
