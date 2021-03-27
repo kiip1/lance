@@ -2,12 +2,7 @@ package nl.kiipdevelopment.lance;
 
 import nl.kiipdevelopment.lance.client.LanceClient;
 import nl.kiipdevelopment.lance.client.LanceConsoleClient;
-import nl.kiipdevelopment.lance.configuration.ConfigurationBuilder;
 import nl.kiipdevelopment.lance.server.LanceServer;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class Main {
     public static void main(String[] args) {
@@ -33,20 +28,23 @@ public class Main {
             """
         );
 
-        new LanceServer(new ConfigurationBuilder().setPassword("test").buildServerConfiguration()).start();
+        new LanceServer().start();
+        new LanceConsoleClient().start();
 
         //start test
-        LanceClient lanceClient = new LanceConsoleClient(new ConfigurationBuilder().setPassword("test").build());
+        LanceClient lanceClient = new LanceClient();
 
         lanceClient.start();
 
-        try {
-            lanceClient.setFile("test", Files.readAllBytes(Path.of("build.gradle")));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        int amount = 0;
 
-        lanceClient.getFile("test");
+        if (lanceClient.exists("amount"))
+            amount = lanceClient.getInteger("amount");
+
+        lanceClient.setInteger("amount", ++amount);
+
+        System.out.println(amount);
+
         //end test
     }
 }
