@@ -196,6 +196,14 @@ public class LanceClient extends Thread implements AutoCloseable {
         set(key, new String(value), "setfile");
     }
 
+    public boolean exists(String key) {
+        return get(key, "exists").equals("true");
+    }
+
+    public boolean existsFile(String key) {
+        return get(key, "existsfile").equals("true");
+    }
+
     private String get(String key) {
         return get(key, "get");
     }
