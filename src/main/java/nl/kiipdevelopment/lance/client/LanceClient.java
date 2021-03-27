@@ -183,41 +183,35 @@ public class LanceClient extends Thread implements AutoCloseable {
         out.println(new LanceMessageBuilder()
             .setId(id)
             .setStatusCode(StatusCode.OK)
-            .setMessage("get" + " " + key)
+            .setMessage("get " + key)
             .build()
             .toString()
         );
 
-        return listenerManager.resolve(new ResolvableListener<>() {
-            volatile LanceMessage value = null;
-
-            @Override
-            public DataValue resolve() {
-                while (value == null)
-                    Thread.onSpinWait();
-
-                return value.asDataValue();
-            }
-
-            @Override
-            public boolean run(String line) {
-                LanceMessage lanceMessage = LanceMessage.getFromString(line);
-
-                if (lanceMessage == null) {
-                    out.close();
-
-                    return false;
-                }
-
-                if (lanceMessage.getId() == id) {
-                    value = lanceMessage;
-
-                    return true;
-                }
-
-                return false;
-            }
-        });
+        return listenerManager.resolve(new ResolvableListener<>(id, out, LanceMessage::asDataValue));
+    }
+    
+    /**
+     * Checks if a key exists. Works on both json and file based storage.
+     *
+     * @param key The path, separated by dots
+     * @return Whether the key exists or not
+     */
+    public boolean exists(String key) {
+        while (socket == null || out == null || in == null || listenerManager == null || !authorised)
+            Thread.onSpinWait();
+    
+        int id = ThreadLocalRandom.current().nextInt();
+    
+        out.println(new LanceMessageBuilder()
+                .setId(id)
+                .setStatusCode(StatusCode.OK)
+                .setMessage("exists " + key)
+                .build()
+                .toString()
+        );
+    
+        return listenerManager.resolve(new ResolvableListener<>(id, out, (value) -> value.getMessage().equals("true")));
     }
 
     private void set(String key, String value, JsonElement json) {
