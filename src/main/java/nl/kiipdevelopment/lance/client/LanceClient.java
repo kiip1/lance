@@ -96,7 +96,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         }
     }
 
-    protected void execute(String line) {
+    public void execute(String line) {
         while (socket == null || out == null || in == null || listenerManager == null || !authorised)
             Thread.onSpinWait();
 
