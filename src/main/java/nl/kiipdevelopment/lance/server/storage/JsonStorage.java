@@ -28,7 +28,7 @@ public class JsonStorage implements Storage<JsonElement> {
 	}
 	
 	@Override
-	public JsonElement get(@NotNull String key) {
+	public synchronized JsonElement get(@NotNull String key) {
 		String[] path = key.split("\\.");
 		if (path.length == 0) return null;
 		if (path.length == 1) return data.get(path[0]);
@@ -50,12 +50,12 @@ public class JsonStorage implements Storage<JsonElement> {
 	}
 	
 	@Override
-	public boolean exists(String key) {
+	public synchronized boolean exists(String key) {
 		return get(key) != null;
 	}
 	
 	@Override
-	public void set(@NotNull String key, @NotNull JsonElement value) {
+	public synchronized void set(@NotNull String key, @NotNull JsonElement value) {
 		String[] path = key.split("\\.");
 		if (path.length == 0) return;
 		
@@ -103,7 +103,7 @@ public class JsonStorage implements Storage<JsonElement> {
 	}
 
 	@Override
-	public void save() throws IOException {
+	public synchronized void save() throws IOException {
 		Files.writeString(location, gson.toJson(data));
 	}
 }
