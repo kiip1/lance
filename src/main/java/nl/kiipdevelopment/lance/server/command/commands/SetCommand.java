@@ -31,8 +31,7 @@ public class SetCommand extends Command {
         } else {
             String key = args[0];
 
-            try {
-                Storage<?> storage = handler.server.storage;
+            try (Storage<?> storage = handler.server.storage) {
                 if (storage.isJson() && json != null) {
                     ((JsonStorage) storage).set(key, json);
                 } else {
@@ -52,6 +51,7 @@ public class SetCommand extends Command {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+
                 return getInternalErrorMessage(id);
             }
         }

@@ -42,16 +42,22 @@ public class ConfigurationBuilder {
     /**
      * In seconds
      */
-    public void setAutosaveInterval(int autosaveInterval) {
+    public ConfigurationBuilder setAutosaveInterval(int autosaveInterval) {
         this.autosaveInterval = autosaveInterval;
+
+        return this;
     }
     
-    public void setStorageType(StorageType storageType) {
+    public ConfigurationBuilder setStorageType(StorageType storageType) {
         this.storageType = storageType;
+
+        return this;
     }
     
-    public void setStorageLocation(Path storageLocation) {
+    public ConfigurationBuilder setStorageLocation(Path storageLocation) {
         this.storageLocation = storageLocation;
+
+        return this;
     }
     
     public Configuration build() {

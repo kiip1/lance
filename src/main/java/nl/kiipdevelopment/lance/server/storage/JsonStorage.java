@@ -4,15 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 
 public class JsonStorage implements Storage<JsonElement> {
 	private final Gson gson = new Gson();
@@ -105,7 +101,7 @@ public class JsonStorage implements Storage<JsonElement> {
 	public boolean isJson() {
 		return true;
 	}
-	
+
 	@Override
 	public void save() throws IOException {
 		Files.writeString(location, gson.toJson(data));

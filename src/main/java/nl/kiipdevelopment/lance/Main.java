@@ -61,13 +61,21 @@ public class Main {
         if (startServer) {
             System.out.println("Enter the ip and port for the server (Example: " + DefaultConfiguration.HOST + ":" + DefaultConfiguration.PORT + ")");
 
-            serverIpAndPort = scanner.nextLine().split(":");
+            String line = scanner.nextLine();
+
+            if (line.isEmpty())
+                serverIpAndPort = (DefaultConfiguration.HOST + ":" + DefaultConfiguration.PORT).split(":");
+            else serverIpAndPort = line.split(":");
         }
 
         if (startClient) {
             System.out.println("Enter the ip and port for the client (Example: " + DefaultConfiguration.HOST + ":" + DefaultConfiguration.PORT + ")");
 
-            clientIpAndPort = scanner.nextLine().split(":");
+            String line = scanner.nextLine();
+
+            if (line.isEmpty())
+                clientIpAndPort = (DefaultConfiguration.HOST + ":" + DefaultConfiguration.PORT).split(":");
+            else clientIpAndPort = line.split(":");
         }
 
         if (serverIpAndPort != null)

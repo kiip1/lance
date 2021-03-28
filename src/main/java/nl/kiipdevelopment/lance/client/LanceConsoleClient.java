@@ -1,8 +1,9 @@
 package nl.kiipdevelopment.lance.client;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import nl.kiipdevelopment.lance.configuration.Configuration;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
-import nl.kiipdevelopment.lance.network.LanceMessage;
 
 import java.util.Scanner;
 
@@ -28,8 +29,6 @@ public class LanceConsoleClient extends LanceClient {
     private void init() {
         new Thread(() -> {
             try (Scanner scanner = new Scanner(System.in)) {
-                boolean active = true;
-
                 while (socket == null || out == null || in == null || listenerManager == null)
                     Thread.onSpinWait();
 
@@ -42,11 +41,27 @@ public class LanceConsoleClient extends LanceClient {
                     return false;
                 });
 
-                while (active) {
+                while (true) {
                     try {
-                        execute(scanner.nextLine());
+                        String line = scanner.nextLine();
+                        String[] parts = line.split("(?<!\\\\)\\|");
+
+                        if (parts.length == 2) {
+                            JsonElement element = new Gson().fromJson(parts[1].replace("\\|", "|"), JsonElement.class);
+
+                            if (element.isJsonObject())
+                                execute(
+                                    parts[0].replace("\\|", "|"),
+                                    element.getAsJsonObject()
+                                );
+                            else
+                                execute(
+                                    parts[0].replace("\\|", "|"),
+                                    element
+                                );
+                        } else execute(line);
                     } catch (Exception e) {
-                        active = false;
+                        e.printStackTrace();
                     }
                 }
             }

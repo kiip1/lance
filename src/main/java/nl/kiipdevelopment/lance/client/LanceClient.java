@@ -96,7 +96,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         }
     }
 
-    public void execute(String line) {
+    public void execute(String message) {
         while (socket == null || out == null || in == null || listenerManager == null || !authorised)
             Thread.onSpinWait();
 
@@ -105,7 +105,21 @@ public class LanceClient extends Thread implements AutoCloseable {
         out.println(new LanceMessage(
             id,
             StatusCode.OK,
-            line
+            message
+        ));
+    }
+
+    public void execute(String message, JsonElement json) {
+        while (socket == null || out == null || in == null || listenerManager == null || !authorised)
+            Thread.onSpinWait();
+
+        int id = ThreadLocalRandom.current().nextInt();
+
+        out.println(new LanceMessage(
+            id,
+            StatusCode.OK,
+            message,
+            json
         ));
     }
     
