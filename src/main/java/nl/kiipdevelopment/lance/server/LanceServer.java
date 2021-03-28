@@ -47,9 +47,17 @@ public class LanceServer extends Thread {
 
     @Override
     public void run() {
-        Storage.updateDefaultStorage(configuration.getStorageType(), configuration.getStorageLocation());
-
-        storage = Storage.getDefaultStorage();
+        try {
+            storage = configuration.getStorageType().getStorage(configuration.getStorageLocation());
+            System.out.println("[" + getName() + "] " + "Using storage " + configuration.getStorageType().name());
+            System.out.println("[" + getName() + "] " + "Storage location is '" + configuration.getStorageLocation().toAbsolutePath().toString() + "'");
+            
+            storage.initAutoSave(configuration.getAutosaveInterval(), this);
+        } catch (IOException e) {
+            System.err.println("Error happened while initializing storage");
+            e.printStackTrace();
+            return;
+        }
         
         CommandManager.init();
 

@@ -43,7 +43,7 @@ public class FileStorage implements Storage<byte[]> {
 	}
 	
 	@Override
-	public void set(@NotNull String key, byte[] value) throws Exception {
+	public void set(@NotNull String key, byte[] value) {
 		File dir = location.toFile();
 
 		dir.mkdirs();
@@ -62,5 +62,5 @@ public class FileStorage implements Storage<byte[]> {
 	}
 
 	@Override
-	public void close() {}
+	public void save() {}
 }

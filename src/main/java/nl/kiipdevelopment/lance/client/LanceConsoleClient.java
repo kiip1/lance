@@ -37,7 +37,7 @@ public class LanceConsoleClient extends LanceClient {
 
                 listenerManager.listen(lanceMessage -> {
                     if (lanceMessage == null) out.close();
-                    else System.out.println("[" + getName() + "] " + lanceMessage.getMessage());
+                    else System.out.println("[" + getName() + "] " + lanceMessage.getJson() + " " + lanceMessage.getMessage());
 
                     return false;
                 });

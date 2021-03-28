@@ -204,7 +204,7 @@ public class LanceClient extends Thread implements AutoCloseable {
      * If something goes wrong in the process (shouldn't happen), the error handler is invoked.
      *
      * @param key The path, separated by dots
-     * @return The DataValue at the path
+     * @return The DataValue at the path, even if it is null an empty DataValue will be returned
      *
      * @see DataValue
      */

@@ -1,6 +1,9 @@
 package nl.kiipdevelopment.lance.server.storage;
 
-import java.nio.file.Path;
+import nl.kiipdevelopment.lance.server.LanceServer;
+
+import java.io.IOException;
+import java.util.concurrent.Executors;
 
 public interface Storage<V> extends AutoCloseable {
 	V get(String key) throws Exception;
@@ -12,21 +15,31 @@ public interface Storage<V> extends AutoCloseable {
 	default boolean isJson() {
 		return false;
 	}
-
-	static void updateDefaultStorage(StorageType type, Path location) {
-		StorageHelper.updateDefaultStorage(type, location);
+	
+	void save() throws IOException;
+	
+	@Override
+	default void close() throws Exception {
+		save();
 	}
-
-	static <T> Storage<T> getDefaultStorage() {
-		return StorageHelper.getDefaultStorage();
-	}
-
-	static <T> Storage<T> getStorage(StorageType type) {
-		return StorageHelper.getStorage(type);
-	}
-
-	static <T> Storage<T> getStorage(StorageType type, Path location) {
-		return StorageHelper.getStorage(type, location);
+	
+	default void initAutoSave(int interval, LanceServer server) {
+		Executors.newSingleThreadExecutor().submit(() -> {
+			long intervalMillis = interval * 1000L;
+			long lastAutosaveTime = System.currentTimeMillis();
+			
+			while (server.active) {
+				while (System.currentTimeMillis() - lastAutosaveTime < intervalMillis && server.active)
+					Thread.onSpinWait();
+				
+				try {
+					save();
+					lastAutosaveTime = System.currentTimeMillis();
+				} catch (IOException e) {
+					System.out.println("[" + Thread.currentThread().getName() + "] " + "Unable to save storage: " + e);
+				}
+			}
+		});
 	}
 }
 

@@ -17,7 +17,7 @@ public enum StorageType {
 		this.defaultLocation = defaultLocation;
 	}
 	
-	public Storage<?> getStorage(Path location) throws IOException, StorageException {
+	public Storage<?> getStorage(Path location) throws IOException {
 		return supplier.get(location);
 	}
 	
@@ -38,6 +38,6 @@ public enum StorageType {
 	}
 
 	private interface StorageSupplier {
-		Storage<?> get(Path location) throws IOException, StorageException;
+		Storage<?> get(Path location) throws IOException;
 	}
 }

@@ -20,20 +20,21 @@ public class JsonStorage implements Storage<JsonElement> {
 	private final Path location;
 	private final JsonObject data;
 	
-	public JsonStorage(Path location) throws IOException, StorageException {
+	public JsonStorage(Path location) throws IOException {
 		this.location = location;
 
 		if (location.toFile().createNewFile())
 			Files.writeString(location, "{}");
 
 		JsonElement element = JsonParser.parseReader(Files.newBufferedReader(location));
-		if (!element.isJsonObject()) throw new StorageException("Stored json is not in object format");
+		if (!element.isJsonObject()) element = new JsonObject();
 		this.data = element.getAsJsonObject();
 	}
 	
 	@Override
 	public JsonElement get(@NotNull String key) {
 		String[] path = key.split("\\.");
+		if (path.length == 0) return null;
 		if (path.length == 1) return data.get(path[0]);
 		
 		JsonElement element = data.get(path[0]);
@@ -43,12 +44,13 @@ public class JsonStorage implements Storage<JsonElement> {
 		for (int i = 1; i < path.length; i++) {
 			element = currentObject.get(path[i]);
 			if (element == null) return null;
-			if (i < path.length - 1 && !element.isJsonObject()) return null;
-			
-			currentObject = element.getAsJsonObject();
+			if (i < path.length - 1) {
+				if (!element.isJsonObject()) return null;
+				currentObject = element.getAsJsonObject();
+			}
 		}
 		
-		return currentObject;
+		return element;
 	}
 	
 	@Override
@@ -59,6 +61,7 @@ public class JsonStorage implements Storage<JsonElement> {
 	@Override
 	public void set(@NotNull String key, @NotNull JsonElement value) {
 		String[] path = key.split("\\.");
+		if (path.length == 0) return;
 		
 		if (path.length == 1) {
 			data.add(path[0], value);
@@ -104,7 +107,7 @@ public class JsonStorage implements Storage<JsonElement> {
 	}
 	
 	@Override
-	public void close() throws IOException {
+	public void save() throws IOException {
 		Files.writeString(location, gson.toJson(data));
 	}
 }

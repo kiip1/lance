@@ -75,7 +75,8 @@ public class LanceMessage {
     
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder(id).append(" ").append(code.getId()).append(" ").append(hasJson() ? 1 : 0).append(hasMessage() ? 1 : 0);
+        StringBuilder result = new StringBuilder();
+        result.append(id).append(" ").append(code.getId()).append(" ").append(hasJson() ? 1 : 0).append(hasMessage() ? 1 : 0);
         
         if (hasJson()) {
             result.append(" ").append(encode(GSON.toJson(json)));
@@ -113,7 +114,7 @@ public class LanceMessage {
 
             return new LanceMessage(id, code, message, json);
         } catch (Exception e) {
-            System.out.println("[" + Thread.currentThread().getName() + "] " + "Invalid message: " + e.getMessage());
+            System.out.println("[" + Thread.currentThread().getName() + "] " + "Invalid message: " + e);
         }
 
         return null;

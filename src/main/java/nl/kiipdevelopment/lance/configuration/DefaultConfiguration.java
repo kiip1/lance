@@ -11,6 +11,7 @@ public class DefaultConfiguration {
     public static final int maxRetries = 10;
     public static final int retryTimeout = 1000;
     public static final int backlog = 50;
+    public static final int autosaveInterval = 60;
     public static final boolean passwordEnabled = false;
     public static final String password = null;
     public static final StorageType storageType = StorageType.getDefault();
@@ -21,6 +22,6 @@ public class DefaultConfiguration {
     }
 
     public static ServerConfiguration getDefaultServerConfiguration() {
-        return new ServerConfiguration(storageType, storageLocation, maxRetries, retryTimeout, backlog, passwordEnabled, password);
+        return new ServerConfiguration(storageType, storageLocation, maxRetries, retryTimeout, autosaveInterval, backlog, passwordEnabled, password);
     }
 }
