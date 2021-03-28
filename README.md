@@ -1,3 +1,5 @@
+[![Java CI with Gradle](https://github.com/kiipy/Lance/actions/workflows/gradle.yml/badge.svg)](https://github.com/kiipy/Lance/actions/workflows/gradle.yml)
+
 # Lance
 A simple database made in Java.
 
