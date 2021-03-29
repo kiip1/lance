@@ -1,5 +1,6 @@
 package nl.kiipdevelopment.lance.client;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import nl.kiipdevelopment.lance.configuration.Configuration;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
@@ -27,7 +28,7 @@ public class LanceClient extends Thread implements AutoCloseable {
     private int retries = 0;
     private boolean authorised = false;
     private StatusCode lastStatus = StatusCode.OK;
-    private Consumer<StatusCode> errorHandler = (code) -> {};
+    private Consumer<LanceMessage> errorHandler = (message) -> {};
 
     public LanceClient() {
         this(DefaultConfiguration.HOST, DefaultConfiguration.PORT, DefaultConfiguration.getDefaultConfiguration());
@@ -239,7 +240,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         try {
             return listenerManager.resolve(this, new ResolvableListener<>(id, out, LanceMessage::asDataValue));
         } catch (ErrorStatusException e) {
-            errorHandler.accept(e.getStatusCode());
+            errorHandler.accept(e.getLanceMessage());
             return new DataValue();
         }
     }
@@ -280,8 +281,57 @@ public class LanceClient extends Thread implements AutoCloseable {
         try {
             return listenerManager.resolve(this, new ResolvableListener<>(id, out, (value) -> value.getMessage().equals("true")));
         } catch (ErrorStatusException e) {
-            errorHandler.accept(e.getStatusCode());
+            errorHandler.accept(e.getLanceMessage());
             return false;
+        }
+    }
+    
+    /**
+     * Same as #list() but non-blocking, using a future.
+     *
+     * @return A future for the list of filenames
+     */
+    public Future<String[]> listFilenamesAsync() {
+        return Executors
+                .newSingleThreadExecutor()
+                .submit(this::listFilenames);
+    }
+    
+    /**
+     * Lists the files in the storage directory. Be aware that if the server
+     * does have a json based storage instead of files, this will give an error.
+     *
+     * @return The list of filenames
+     */
+    public String[] listFilenames() {
+        while (socket == null || out == null || in == null || listenerManager == null || !authorised)
+            Thread.onSpinWait();
+    
+        int id = ThreadLocalRandom.current().nextInt();
+    
+        out.println(new LanceMessageBuilder()
+                .setId(id)
+                .setStatusCode(StatusCode.OK)
+                .setMessage("list")
+                .build()
+                .toString()
+        );
+    
+        try {
+            return listenerManager.resolve(this, new ResolvableListener<>(id, out, (value) -> {
+                JsonArray array = value.getJson().getAsJsonArray();
+                String[] result = new String[array.size()];
+                
+                for (int i = 0; i < result.length; i++) {
+                    JsonElement element = array.get(i);
+                    result[i] = element.getAsString();
+                }
+                
+                return result;
+            }));
+        } catch (ErrorStatusException e) {
+            errorHandler.accept(e.getLanceMessage());
+            return new String[0];
         }
     }
 
@@ -303,7 +353,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         try {
             return listenerManager.resolve(this, new ResolvableListener<>(id, out, (returnValue) -> returnValue.getCode() == StatusCode.OK));
         } catch (ErrorStatusException e) {
-            errorHandler.accept(e.getStatusCode());
+            errorHandler.accept(e.getLanceMessage());
             return false;
         }
     }
@@ -316,7 +366,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         return lastStatus;
     }
     
-    public void setErrorHandler(Consumer<StatusCode> errorHandler) {
+    public void setErrorHandler(Consumer<LanceMessage> errorHandler) {
         this.errorHandler = errorHandler;
     }
     

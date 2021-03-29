@@ -14,6 +14,7 @@ public class CommandManager {
         CommandManager.register(
             new ConnectionsCommand(),
             new ExistsCommand(),
+            new ListCommand(),
             new GetCommand(),
             new HelpCommand(),
             new SetCommand(),
