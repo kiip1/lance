@@ -5,9 +5,10 @@ public enum StatusCode {
     ERROR (1),
     AUTH_REQUIRED (2),
     ACCESS_GRANTED (3),
-    INTERNAL_ERROR (4),
-    INVALID_MESSAGE (5),
-    CLOSING (6);
+    WRONG_PASSWORD (4),
+    INTERNAL_ERROR (5),
+    INVALID_MESSAGE (6),
+    CLOSING (7);
 
     private final int id;
 

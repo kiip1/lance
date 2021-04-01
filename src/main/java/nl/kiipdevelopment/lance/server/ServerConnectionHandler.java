@@ -68,7 +68,7 @@ public class ServerConnectionHandler extends Thread {
                             id,
                             StatusCode.ACCESS_GRANTED
                     ));
-                } else close(StatusCode.INTERNAL_ERROR);
+                } else close(StatusCode.WRONG_PASSWORD);
             }
     
             if (authorised) while (active) {

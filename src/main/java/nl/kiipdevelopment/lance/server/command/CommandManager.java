@@ -12,6 +12,7 @@ public class CommandManager {
 
     public static void init() {
         CommandManager.register(
+            new BatchCommand(),
             new ConnectionsCommand(),
             new ExistsCommand(),
             new GetCommand(),

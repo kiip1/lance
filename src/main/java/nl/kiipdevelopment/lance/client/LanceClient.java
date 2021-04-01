@@ -7,11 +7,14 @@ import nl.kiipdevelopment.lance.network.LanceMessage;
 import nl.kiipdevelopment.lance.network.LanceMessageBuilder;
 import nl.kiipdevelopment.lance.network.StatusCode;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class LanceClient extends Thread implements AutoCloseable {
@@ -26,8 +29,10 @@ public class LanceClient extends Thread implements AutoCloseable {
 
     private int retries = 0;
     private boolean authorised = false;
+    private boolean batchMode = false;
     private StatusCode lastStatus = StatusCode.OK;
     private Consumer<StatusCode> errorHandler = (code) -> {};
+    private List<String> batchQueue = new ArrayList<>();
 
     public LanceClient() {
         this(DefaultConfiguration.HOST, DefaultConfiguration.PORT, DefaultConfiguration.getDefaultConfiguration());
@@ -96,7 +101,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         }
     }
 
-    public void execute(String message) {
+    public int execute(String message) {
         while (socket == null || out == null || in == null || listenerManager == null || !authorised)
             Thread.onSpinWait();
 
@@ -107,6 +112,8 @@ public class LanceClient extends Thread implements AutoCloseable {
             StatusCode.OK,
             message
         ));
+
+        return id;
     }
 
     public void execute(String message, JsonElement json) {
@@ -285,25 +292,73 @@ public class LanceClient extends Thread implements AutoCloseable {
         }
     }
 
+    /**
+     * Adds invokes of the LanceClient#set method to a queue and then invoke them as a single command.
+     *
+     * @param runnable A runnable containing all the set actions.
+     * @return Whether the batch was successful or not
+     */
+    public boolean batch(Runnable runnable) {
+        while (socket == null || out == null || in == null || listenerManager == null || !authorised)
+            Thread.onSpinWait();
+
+        boolean success = false;
+
+        batchMode = true;
+
+        try {
+            Executors.newSingleThreadExecutor().submit(runnable).get(1, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+        }
+
+        int id = execute("batch " + String.join("/", batchQueue));
+
+        try {
+            success = listenerManager.resolve(this, new ResolvableListener<>(
+                id,
+                out,
+                message -> Boolean.parseBoolean(message.getMessage())
+            ));
+        } catch (ErrorStatusException e) {
+            e.printStackTrace();
+        }
+
+        batchQueue.clear();
+
+        batchMode = false;
+
+        return success;
+    }
+
     private boolean set(String key, String value, JsonElement json) {
         while (socket == null || out == null || in == null || listenerManager == null || !authorised)
             Thread.onSpinWait();
 
         int id = ThreadLocalRandom.current().nextInt();
 
-        out.println(new LanceMessageBuilder()
+        if (batchMode) {
+            batchQueue.add(new LanceMessageBuilder()
+                .setId(id)
+                .setStatusCode(StatusCode.OK)
+                .setMessage("set " + key + " " + value)
+                .setJson(json)
+                .build().toString());
+
+            return true;
+        } else out.println(new LanceMessageBuilder()
             .setId(id)
             .setStatusCode(StatusCode.OK)
             .setMessage("set " + key + " " + value)
             .setJson(json)
             .build()
-            .toString()
-        );
+            .toString());
         
         try {
             return listenerManager.resolve(this, new ResolvableListener<>(id, out, (returnValue) -> returnValue.getCode() == StatusCode.OK));
         } catch (ErrorStatusException e) {
             errorHandler.accept(e.getStatusCode());
+
             return false;
         }
     }

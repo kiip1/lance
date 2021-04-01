@@ -11,14 +11,23 @@ public class ResolvableListener<T> implements Listener {
     
     private final int id;
     private final PrintWriter out;
+    private final Function<LanceMessage, Boolean> filter;
     private final Function<LanceMessage, T> resolver;
-    
+
     public ResolvableListener(int id, PrintWriter out, Function<LanceMessage, T> resolver) {
         this.id = id;
         this.out = out;
+        this.filter = lanceMessage -> lanceMessage.getId() == id;
         this.resolver = resolver;
     }
-    
+
+    public ResolvableListener(int id, PrintWriter out, Function<LanceMessage, Boolean> filter, Function<LanceMessage, T> resolver) {
+        this.id = id;
+        this.out = out;
+        this.filter = filter;
+        this.resolver = resolver;
+    }
+
     public T resolve(LanceClient client) throws ErrorStatusException {
         while (value == null)
             Thread.onSpinWait();
@@ -40,7 +49,7 @@ public class ResolvableListener<T> implements Listener {
             return false;
         }
         
-        if (lanceMessage.getId() == id) {
+        if (filter.apply(lanceMessage)) {
             value = lanceMessage;
             
             return true;
