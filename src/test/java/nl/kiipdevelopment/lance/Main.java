@@ -27,7 +27,7 @@ public class Main {
 
         client.batch(() -> {
             for (int i = 0; i < amount; i++)
-                client.setJson("key" + i, new JsonPrimitive("value" + i));
+                client.setJson("keyw" + i, new JsonPrimitive("valuew" + i));
         });
 
         System.out.println(amount + " with batch: " + (System.currentTimeMillis() - start) + "ms.");
@@ -37,7 +37,7 @@ public class Main {
         long start = System.currentTimeMillis();
 
         for (int i = 0; i < amount; i++)
-            client.setJson("key" + i, new JsonPrimitive("value" + i));
+            client.setJson("keyo" + i, new JsonPrimitive("valueo" + i));
 
         System.out.println(amount + " without batch: " + (System.currentTimeMillis() - start) + "ms.");
     }
