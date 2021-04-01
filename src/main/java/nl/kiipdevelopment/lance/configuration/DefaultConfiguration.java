@@ -2,6 +2,7 @@ package nl.kiipdevelopment.lance.configuration;
 
 import nl.kiipdevelopment.lance.server.storage.StorageType;
 
+import java.io.File;
 import java.nio.file.Path;
 
 public class DefaultConfiguration {
@@ -15,7 +16,7 @@ public class DefaultConfiguration {
     public static final boolean passwordEnabled = false;
     public static final String password = null;
     public static final StorageType storageType = StorageType.getDefault();
-    public static final Path storageLocation = storageType.getDefaultLocation();
+    public static final File storageLocation = storageType.getDefaultLocation();
 
     public static Configuration getDefaultConfiguration() {
         return new Configuration(maxRetries, retryTimeout, passwordEnabled, password);

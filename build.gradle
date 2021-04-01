@@ -1,9 +1,12 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group 'nl.kiipdevelopment'
-version '1.0.0'
+version '1.0.1'
+targetCompatibility = '11'
+sourceCompatibility = '11'
 
 repositories {
     mavenCentral()
@@ -24,5 +27,21 @@ jar {
 
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            url repoWriteUrl
+        }
+    }
+
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'lance'
+
+            from components.java
+        }
     }
 }

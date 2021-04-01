@@ -1,27 +1,28 @@
 package nl.kiipdevelopment.lance.server.storage;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
 public enum StorageType {
-	JSON(0, JsonStorage::new, Path.of("database.json")),
-	FILE(1, FileStorage::new, Path.of("files"));
+	JSON(0, JsonStorage::new, new File("database.json")),
+	FILE(1, FileStorage::new, new File("files"));
 
 	private final int id;
 	private final StorageSupplier supplier;
-	private final Path defaultLocation;
+	private final File defaultLocation;
 	
-	StorageType(int id, StorageSupplier supplier, Path defaultLocation) {
+	StorageType(int id, StorageSupplier supplier, File defaultLocation) {
 		this.id = id;
 		this.supplier = supplier;
 		this.defaultLocation = defaultLocation;
 	}
 	
-	public Storage<?> getStorage(Path location) throws IOException {
+	public Storage<?> getStorage(File location) throws IOException {
 		return supplier.get(location);
 	}
 	
-	public Path getDefaultLocation() {
+	public File getDefaultLocation() {
 		return defaultLocation;
 	}
 	
@@ -38,6 +39,6 @@ public enum StorageType {
 	}
 
 	private interface StorageSupplier {
-		Storage<?> get(Path location) throws IOException;
+		Storage<?> get(File location) throws IOException;
 	}
 }

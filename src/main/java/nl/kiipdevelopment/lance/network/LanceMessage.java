@@ -7,7 +7,6 @@ import nl.kiipdevelopment.lance.client.DataValue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Objects;
 
 public class LanceMessage {
     private static final Gson GSON = new Gson();
@@ -121,12 +120,12 @@ public class LanceMessage {
     }
 
     private static String encode(String decoded) {
+        if (decoded == null) decoded = "null";
+        
         return Base64
             .getEncoder()
-            .encodeToString(Objects.requireNonNullElse(
-                decoded,
-                "null"
-            ).getBytes(StandardCharsets.UTF_8));
+            .encodeToString(decoded
+            .getBytes(StandardCharsets.UTF_8));
     }
 
     private static String decode(String encoded) {

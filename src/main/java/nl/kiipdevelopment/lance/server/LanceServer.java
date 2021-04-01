@@ -51,7 +51,7 @@ public class LanceServer extends Thread {
             storage = configuration.getStorageType().getStorage(configuration.getStorageLocation());
 
             System.out.println("[" + getName() + "] " + "Using storage " + configuration.getStorageType().name());
-            System.out.println("[" + getName() + "] " + "Storage location is '" + configuration.getStorageLocation().toAbsolutePath() + "'");
+            System.out.println("[" + getName() + "] " + "Storage location is '" + configuration.getStorageLocation().toPath().toAbsolutePath() + "'");
         } catch (IOException e) {
             System.err.println("Error happened while initializing storage");
             e.printStackTrace();

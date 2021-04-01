@@ -6,23 +6,25 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class JsonStorage implements Storage<JsonElement> {
 	private final Gson gson = new Gson();
 
-	private final Path location;
+	private final File location;
 	private final JsonObject data;
 	
-	public JsonStorage(Path location) throws IOException {
+	public JsonStorage(File location) throws IOException {
 		this.location = location;
 
-		if (location.toFile().createNewFile())
-			Files.writeString(location, "{}");
+		if (location.createNewFile()) {
+			Files.write(location.toPath(), "{}".getBytes(StandardCharsets.UTF_8));
+		}
 
-		JsonElement element = JsonParser.parseReader(Files.newBufferedReader(location));
+		JsonElement element = JsonParser.parseReader(Files.newBufferedReader(location.toPath()));
 		if (!element.isJsonObject()) element = new JsonObject();
 		this.data = element.getAsJsonObject();
 	}
@@ -120,6 +122,6 @@ public class JsonStorage implements Storage<JsonElement> {
 
 	@Override
 	public synchronized void save() throws IOException {
-		Files.writeString(location, gson.toJson(data));
+		Files.write(location.toPath(), gson.toJson(data).getBytes(StandardCharsets.UTF_8));
 	}
 }

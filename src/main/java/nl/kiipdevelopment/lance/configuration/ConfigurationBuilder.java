@@ -2,6 +2,7 @@ package nl.kiipdevelopment.lance.configuration;
 
 import nl.kiipdevelopment.lance.server.storage.StorageType;
 
+import java.io.File;
 import java.nio.file.Path;
 
 public class ConfigurationBuilder {
@@ -12,7 +13,7 @@ public class ConfigurationBuilder {
     private boolean passwordEnabled = DefaultConfiguration.passwordEnabled;
     private String password = DefaultConfiguration.password;
     private StorageType storageType = DefaultConfiguration.storageType;
-    private Path storageLocation = DefaultConfiguration.storageLocation;
+    private File storageLocation = DefaultConfiguration.storageLocation;
 
     public ConfigurationBuilder setMaxRetries(int maxRetries) {
         this.maxRetries = maxRetries;
@@ -54,7 +55,7 @@ public class ConfigurationBuilder {
         return this;
     }
     
-    public ConfigurationBuilder setStorageLocation(Path storageLocation) {
+    public ConfigurationBuilder setStorageLocation(File storageLocation) {
         this.storageLocation = storageLocation;
 
         return this;

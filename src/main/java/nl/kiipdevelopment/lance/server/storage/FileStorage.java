@@ -9,21 +9,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class FileStorage implements Storage<byte[]> {
-	private Path location;
+	private final File location;
 
-	public FileStorage(Path location) {
+	public FileStorage(File location) {
 		this.location = location;
 
-		location.toFile().mkdirs();
+		location.mkdirs();
 	}
 	
 	@Override
 	public byte[] get(@NotNull String key) throws Exception {
-		File dir = location.toFile();
-		dir.mkdirs();
+		location.mkdirs();
 
-		if (dir.isDirectory()) {
-			File[] files = dir.listFiles();
+		if (location.isDirectory()) {
+			File[] files = location.listFiles();
 
 			if (files == null)
 				return null;
@@ -38,13 +37,12 @@ public class FileStorage implements Storage<byte[]> {
 	}
 	
 	public JsonArray list() {
-		File dir = location.toFile();
-		dir.mkdirs();
+		location.mkdirs();
 		
 		JsonArray array = new JsonArray();
 		
-		if (dir.isDirectory()) {
-			String[] files = dir.list();
+		if (location.isDirectory()) {
+			String[] files = location.list();
 			
 			if (files == null)
 				return array;
@@ -63,15 +61,14 @@ public class FileStorage implements Storage<byte[]> {
 	
 	@Override
 	public void set(@NotNull String key, byte[] value) throws Exception {
-		File dir = location.toFile();
-		dir.mkdirs();
+		location.mkdirs();
 
-		if (dir.isDirectory()) {
-			Path target = location.resolve(key);
+		if (location.isDirectory()) {
+			File target = new File(location, key);
 
-			target.toFile().createNewFile();
+			target.createNewFile();
 
-			Files.write(target, value);
+			Files.write(target.toPath(), value);
 		}
 	}
 
