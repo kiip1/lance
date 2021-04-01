@@ -27,12 +27,13 @@ public class LanceClient extends Thread implements AutoCloseable {
     public BufferedReader in;
     public ListenerManager listenerManager;
 
+    private final List<String> batchQueue = new ArrayList<>();
+
     private int retries = 0;
     private boolean authorised = false;
     private boolean batchMode = false;
     private StatusCode lastStatus = StatusCode.OK;
-    private Consumer<StatusCode> errorHandler = (code) -> {};
-    private List<String> batchQueue = new ArrayList<>();
+    private Consumer<LanceMessage> errorHandler = (code) -> {};
 
     public LanceClient() {
         this(DefaultConfiguration.HOST, DefaultConfiguration.PORT, DefaultConfiguration.getDefaultConfiguration());
@@ -246,7 +247,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         try {
             return listenerManager.resolve(this, new ResolvableListener<>(id, out, LanceMessage::asDataValue));
         } catch (ErrorStatusException e) {
-            errorHandler.accept(e.getStatusCode());
+            errorHandler.accept(e.getLanceMessage());
             return new DataValue();
         }
     }
@@ -287,7 +288,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         try {
             return listenerManager.resolve(this, new ResolvableListener<>(id, out, (value) -> value.getMessage().equals("true")));
         } catch (ErrorStatusException e) {
-            errorHandler.accept(e.getStatusCode());
+            errorHandler.accept(e.getLanceMessage());
             return false;
         }
     }
@@ -357,7 +358,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         try {
             return listenerManager.resolve(this, new ResolvableListener<>(id, out, (returnValue) -> returnValue.getCode() == StatusCode.OK));
         } catch (ErrorStatusException e) {
-            errorHandler.accept(e.getStatusCode());
+            errorHandler.accept(e.getLanceMessage());
 
             return false;
         }
@@ -371,7 +372,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         return lastStatus;
     }
     
-    public void setErrorHandler(Consumer<StatusCode> errorHandler) {
+    public void setErrorHandler(Consumer<LanceMessage> errorHandler) {
         this.errorHandler = errorHandler;
     }
     
