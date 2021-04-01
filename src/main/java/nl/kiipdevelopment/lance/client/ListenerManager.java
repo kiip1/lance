@@ -8,11 +8,13 @@ import java.util.ArrayList;
 
 public class ListenerManager extends Thread {
     private final ArrayList<Listener> listeners = new ArrayList<>();
+    private final LanceClient client;
     private final BufferedReader in;
 
-    public ListenerManager(BufferedReader in) {
+    public ListenerManager(LanceClient client, BufferedReader in) {
         super("Lance-Listener-Manager");
 
+        this.client = client;
         this.in = in;
     }
 
@@ -27,6 +29,7 @@ public class ListenerManager extends Thread {
 
                 for (Listener listener : tempListeners) {
                     LanceMessage lanceMessage = LanceMessage.getFromString(line);
+
                     boolean success = listener.run(lanceMessage);
 
                     if (success)
@@ -43,12 +46,6 @@ public class ListenerManager extends Thread {
 
     public void listen(Listener listener) {
         listeners.add(listener);
-    }
-
-    public <T> T resolve(LanceClient client, ResolvableListener<T> listener) throws ErrorStatusException {
-        listen(listener);
-        
-        return listener.resolve(client);
     }
 
     public void close() {

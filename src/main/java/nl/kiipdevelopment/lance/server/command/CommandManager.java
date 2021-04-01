@@ -50,7 +50,13 @@ public class CommandManager {
         Command command = commandMap.get(trigger);
 
         if (command == null) return unknownCommand(id);
-        else return command.execute(handler, id, trigger, lanceMessage.getJson(), args);
+        else return command.execute(
+            handler,
+            id,
+            trigger,
+            lanceMessage.getJson(),
+            args
+        );
     }
 
     public static Map<String, Command> getCommandMap() {
