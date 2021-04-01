@@ -18,9 +18,9 @@ lanceClient.start();
 int amount = 0;
 
 if (lanceClient.exists("amount"))
-    amount = lanceClient.getInteger("amount");
+    amount = lanceClient.getJson("amount").getAsInt();
 
-lanceClient.setInteger("amount", ++amount);
+lanceClient.setJson("amount", new JsonPrimitive(++amount));
 
 System.out.println(amount);
 ```
