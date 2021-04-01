@@ -35,7 +35,7 @@ public class ResolvableListener<T> implements Listener {
         client.setLastStatus(value.getCode());
         
         if (value.getCode() != StatusCode.OK) {
-            throw new ErrorStatusException(value.getCode());
+            throw new ErrorStatusException(value);
         }
         
         return resolver.apply(value);

@@ -55,12 +55,16 @@ public class JsonStorage implements Storage<JsonElement> {
 	}
 	
 	@Override
-	public synchronized void set(@NotNull String key, @NotNull JsonElement value) {
+	public synchronized void set(@NotNull String key, JsonElement value) {
 		String[] path = key.split("\\.");
 		if (path.length == 0) return;
 		
 		if (path.length == 1) {
-			data.add(path[0], value);
+			if (value == null) {
+				data.remove(path[0]);
+			} else {
+				data.add(path[0], value);
+			}
 			return;
 		}
 		
@@ -68,10 +72,14 @@ public class JsonStorage implements Storage<JsonElement> {
 		if (data.has(path[0])) {
 			element = data.get(path[0]);
 			if (!element.isJsonObject()) {
+				if (value == null) return;
+				
 				element = new JsonObject();
 				data.add(path[0], element);
 			}
 		} else {
+			if (value == null) return;
+			
 			element = new JsonObject();
 			data.add(path[0], element);
 		}
@@ -82,17 +90,25 @@ public class JsonStorage implements Storage<JsonElement> {
 				if (currentObject.has(path[i])) {
 					element = currentObject.get(path[i]);
 					if (!element.isJsonObject()) {
+						if (value == null) return;
+						
 						element = new JsonObject();
 						currentObject.add(path[i], element);
 					}
 				} else {
+					if (value == null) return;
+					
 					element = new JsonObject();
 					currentObject.add(path[i], element);
 				}
 				
 				currentObject = element.getAsJsonObject();
 			} else {
-				currentObject.add(path[i], value);
+				if (value == null) {
+					currentObject.remove(path[i]);
+				} else {
+					currentObject.add(path[i], value);
+				}
 			}
 		}
 	}
