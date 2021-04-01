@@ -295,6 +295,7 @@ public class LanceClient extends Thread implements AutoCloseable {
 
     /**
      * Adds invokes of the LanceClient#set method to a queue and then invoke them as a single command.
+     * Recommended to use when invoking 1000 or more LanceClient:set methods at a time.
      *
      * @param runnable A runnable containing all the set actions.
      * @return Whether the batch was successful or not
