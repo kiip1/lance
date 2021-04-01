@@ -48,6 +48,18 @@ public class ListenerManager extends Thread {
         listeners.add(listener);
     }
 
+    public <T> T resolve(ResolvableListener<T> listener, Runnable runnable) {
+        listen(listener);
+
+        try {
+            return listener.resolve(runnable);
+        } catch (ErrorStatusException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public void close() {
         listeners.clear();
     }

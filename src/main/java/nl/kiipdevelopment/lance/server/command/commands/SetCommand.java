@@ -32,6 +32,8 @@ public class SetCommand extends Command {
             String key = args[0];
 
             try (Storage<?> storage = handler.server.storage) {
+                builder.setMessage("true");
+
                 if (storage.isJson() && (json != null || (args.length == 2 && args[1].equalsIgnoreCase("null")))) {
                     ((JsonStorage) storage).set(key, json);
                 } else {

@@ -14,8 +14,10 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 public class LanceClient extends Thread implements AutoCloseable {
@@ -103,26 +105,35 @@ public class LanceClient extends Thread implements AutoCloseable {
         }
     }
 
-    public int execute(String message) {
+    public void execute(String message) {
+        execute(
+            ThreadLocalRandom.current().nextInt(),
+            message
+        );
+    }
+
+    public void execute(int id, String message) {
         while (socket == null || out == null || in == null || listenerManager == null || !authorised)
             Thread.onSpinWait();
-
-        int id = ThreadLocalRandom.current().nextInt();
 
         out.println(new LanceMessage(
             id,
             StatusCode.OK,
             message
         ));
-
-        return id;
     }
 
     public void execute(String message, JsonElement json) {
+        execute(
+            ThreadLocalRandom.current().nextInt(),
+            message,
+            json
+        );
+    }
+
+    public void execute(int id, String message, JsonElement json) {
         while (socket == null || out == null || in == null || listenerManager == null || !authorised)
             Thread.onSpinWait();
-
-        int id = ThreadLocalRandom.current().nextInt();
 
         out.println(new LanceMessage(
             id,
@@ -237,29 +248,17 @@ public class LanceClient extends Thread implements AutoCloseable {
 
         int id = ThreadLocalRandom.current().nextInt();
 
-        AtomicReference<DataValue> result = new AtomicReference<>();
-
-        listenerManager.listen(lanceMessage -> {
-            if (lanceMessage.getId() != id)
-                return false;
-
-            result.set(lanceMessage.asDataValue());
-
-            return true;
-        });
-
-        out.println(new LanceMessageBuilder()
+        return listenerManager.resolve(new ResolvableListener<>(
+            this,
+            id,
+            LanceMessage::asDataValue
+        ), () -> out.println(new LanceMessageBuilder()
             .setId(id)
             .setStatusCode(StatusCode.OK)
             .setMessage("get " + key)
             .build()
             .toString()
-        );
-
-        while (result.get() == null)
-            Thread.onSpinWait();
-        
-        return result.get();
+        ));
     }
     
     /**
@@ -287,29 +286,17 @@ public class LanceClient extends Thread implements AutoCloseable {
     
         int id = ThreadLocalRandom.current().nextInt();
 
-        AtomicReference<Boolean> result = new AtomicReference<>();
-
-        listenerManager.listen(lanceMessage -> {
-            if (lanceMessage.getId() != id)
-                return false;
-
-            result.set(lanceMessage.getMessage().equals("true"));
-
-            return true;
-        });
-
-        out.println(new LanceMessageBuilder()
-                .setId(id)
-                .setStatusCode(StatusCode.OK)
-                .setMessage("exists " + key)
-                .build()
-                .toString()
-        );
-
-        while (result.get() == null)
-            Thread.onSpinWait();
-
-        return result.get();
+        return listenerManager.resolve(new ResolvableListener<>(
+            this,
+            id,
+            lanceMessage -> lanceMessage.getMessage().equals("true")
+        ), () -> out.println(new LanceMessageBuilder()
+            .setId(id)
+            .setStatusCode(StatusCode.OK)
+            .setMessage("exists " + key)
+            .build()
+            .toString()
+        ));
     }
 
     /**
@@ -325,33 +312,25 @@ public class LanceClient extends Thread implements AutoCloseable {
 
         batchMode = true;
 
-        try {
-            Executors.newSingleThreadExecutor().submit(runnable).get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
+        int id = ThreadLocalRandom.current().nextInt();
 
-        int id = execute("batch " + String.join("/", batchQueue));
+        return listenerManager.resolve(new ResolvableListener<>(
+            this,
+            id,
+            lanceMessage -> lanceMessage.getMessage().equals("true")
+        ), () -> {
+            try {
+                Executors.newSingleThreadExecutor().submit(runnable).get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
 
-        AtomicReference<Boolean> success = new AtomicReference<>();
+            execute(id, "batch " + String.join("/", batchQueue));
 
-        listenerManager.listen(lanceMessage -> {
-            if (lanceMessage.getId() != id)
-                return false;
+            batchQueue.clear();
 
-            success.set(Boolean.parseBoolean(lanceMessage.getMessage()));
-
-            return true;
+            batchMode = false;
         });
-
-        batchQueue.clear();
-
-        batchMode = false;
-
-        while (success.get() == null)
-            Thread.onSpinWait();
-
-        return success.get();
     }
 
     private boolean set(String key, String value, JsonElement json) {
@@ -359,17 +338,6 @@ public class LanceClient extends Thread implements AutoCloseable {
             Thread.onSpinWait();
 
         int id = ThreadLocalRandom.current().nextInt();
-
-        AtomicReference<Boolean> result = new AtomicReference<>();
-
-        listenerManager.listen(lanceMessage -> {
-            if (lanceMessage.getId() != id)
-                return false;
-
-            result.set(Boolean.parseBoolean(lanceMessage.getMessage()));
-
-            return true;
-        });
 
         if (batchMode) {
             batchQueue.add(new LanceMessageBuilder()
@@ -380,18 +348,18 @@ public class LanceClient extends Thread implements AutoCloseable {
                 .build().toString());
 
             return true;
-        } else out.println(new LanceMessageBuilder()
-            .setId(id)
-            .setStatusCode(StatusCode.OK)
-            .setMessage("set " + key + " " + value)
-            .setJson(json)
-            .build()
-            .toString());
-
-        while (result.get() == null)
-            Thread.onSpinWait();
-
-        return result.get();
+        } else return listenerManager.resolve(new ResolvableListener<>(
+                this,
+                id,
+                lanceMessage -> lanceMessage.getMessage().equals("true")
+            ), () -> out.println(new LanceMessageBuilder()
+                .setId(id)
+                .setStatusCode(StatusCode.OK)
+                .setMessage("set " + key + " " + value)
+                .setJson(json)
+                .build()
+                .toString()
+            ));
     }
     
     void setLastStatus(StatusCode lastStatus) {
