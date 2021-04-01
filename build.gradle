@@ -16,9 +16,6 @@ dependencies {
 }
 
 jar {
-    def name = '1.0.0';
-    version name
-
     manifest {
         attributes(
             'Main-Class': 'nl.kiipdevelopment.lance.Main'
