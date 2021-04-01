@@ -119,7 +119,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         out.println(new LanceMessage(
             id,
             StatusCode.OK,
-            message
+            message.isBlank() ? "null" : message
         ));
     }
 
@@ -138,7 +138,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         out.println(new LanceMessage(
             id,
             StatusCode.OK,
-            message,
+            message.isBlank() ? "null" : message ,
             json
         ));
     }
@@ -249,7 +249,6 @@ public class LanceClient extends Thread implements AutoCloseable {
         int id = ThreadLocalRandom.current().nextInt();
 
         return listenerManager.resolve(new ResolvableListener<>(
-            this,
             id,
             LanceMessage::asDataValue
         ), () -> out.println(new LanceMessageBuilder()
@@ -287,7 +286,6 @@ public class LanceClient extends Thread implements AutoCloseable {
         int id = ThreadLocalRandom.current().nextInt();
 
         return listenerManager.resolve(new ResolvableListener<>(
-            this,
             id,
             lanceMessage -> lanceMessage.getMessage().equals("true")
         ), () -> out.println(new LanceMessageBuilder()
@@ -315,7 +313,6 @@ public class LanceClient extends Thread implements AutoCloseable {
         int id = ThreadLocalRandom.current().nextInt();
 
         return listenerManager.resolve(new ResolvableListener<>(
-            this,
             id,
             lanceMessage -> lanceMessage.getMessage().equals("true")
         ), () -> {
@@ -349,7 +346,6 @@ public class LanceClient extends Thread implements AutoCloseable {
 
             return true;
         } else return listenerManager.resolve(new ResolvableListener<>(
-                this,
                 id,
                 lanceMessage -> lanceMessage.getMessage().equals("true")
             ), () -> out.println(new LanceMessageBuilder()

@@ -5,17 +5,22 @@ import nl.kiipdevelopment.lance.network.LanceMessage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class ListenerManager extends Thread {
     private final ArrayList<Listener> listeners = new ArrayList<>();
-    private final LanceClient client;
     private final BufferedReader in;
+
+    public final LanceClient client;
+    public final ThreadPoolExecutor executor;
 
     public ListenerManager(LanceClient client, BufferedReader in) {
         super("Lance-Listener-Manager");
 
         this.client = client;
         this.in = in;
+        this.executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     }
 
     @Override
@@ -28,12 +33,16 @@ public class ListenerManager extends Thread {
                 final ArrayList<Listener> tempListeners = (ArrayList<Listener>) listeners.clone();
 
                 for (Listener listener : tempListeners) {
-                    LanceMessage lanceMessage = LanceMessage.getFromString(line);
+                    final String finalLine = line;
 
-                    boolean success = listener.run(lanceMessage);
+                    executor.submit(() -> {
+                        LanceMessage lanceMessage = LanceMessage.getFromString(finalLine);
 
-                    if (success)
-                        listeners.remove(listener);
+                        boolean success = listener.run(lanceMessage);
+
+                        if (success)
+                            listeners.remove(listener);
+                    });
                 }
             }
 
@@ -52,7 +61,7 @@ public class ListenerManager extends Thread {
         listen(listener);
 
         try {
-            return listener.resolve(runnable);
+            return listener.resolve(this, runnable);
         } catch (ErrorStatusException e) {
             e.printStackTrace();
         }

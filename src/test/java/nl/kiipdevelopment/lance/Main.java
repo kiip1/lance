@@ -4,6 +4,8 @@ import com.google.gson.JsonPrimitive;
 import nl.kiipdevelopment.lance.client.LanceClient;
 import nl.kiipdevelopment.lance.server.LanceServer;
 
+import java.util.UUID;
+
 public class Main {
     public static void main(String[] args) {
         new LanceServer().start();
@@ -27,7 +29,7 @@ public class Main {
 
         client.batch(() -> {
             for (int i = 0; i < amount; i++)
-                client.setJson("keyw" + i, new JsonPrimitive("valuew" + i));
+                client.setJson("keyw" + i, new JsonPrimitive(UUID.randomUUID().toString()));
         });
 
         System.out.println(amount + " with batch: " + (System.currentTimeMillis() - start) + "ms.");
