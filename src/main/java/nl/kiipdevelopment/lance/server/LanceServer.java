@@ -23,7 +23,7 @@ public class LanceServer extends Thread {
 
     public final List<ServerConnectionHandler> handlers = new ArrayList<>();
     public final List<String> connections = new ArrayList<>();
-    public boolean active = true;
+    public boolean active = false;
 
     public LanceServer() {
         this(DefaultConfiguration.HOST, DefaultConfiguration.PORT, DefaultConfiguration.getDefaultServerConfiguration());
@@ -64,6 +64,7 @@ public class LanceServer extends Thread {
             serverSocket = new ServerSocket(port, configuration.getBacklog(), InetAddress.getByName(host));
 
             System.out.println("[" + getName() + "] " + "Server started on " + serverSocket.getInetAddress().getHostAddress() + ":" + serverSocket.getLocalPort());
+            active = true;
 
             while (active)
                 try {
