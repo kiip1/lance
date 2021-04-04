@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'nl.kiipdevelopment'
-version '1.0.1'
+version '1.0.2'
 targetCompatibility = '11'
 sourceCompatibility = '11'
 
@@ -15,20 +15,25 @@ repositories {
 dependencies {
     implementation 'org.jetbrains:annotations:20.1.0'
     implementation 'com.google.code.gson:gson:2.8.6'
-    compile 'com.google.code.gson:gson:2.8.6'
 }
 
-jar {
+task standaloneJar(type: Jar) {
+    baseName = 'Lance-standalone'
+
     manifest {
         attributes(
-            'Main-Class': 'nl.kiipdevelopment.lance.Main'
+                'Main-Class': 'nl.kiipdevelopment.lance.Main'
         )
     }
 
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+
+    with jar
 }
+
+jar.finalizedBy(standaloneJar)
 
 publishing {
     repositories {

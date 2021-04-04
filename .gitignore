@@ -2,5 +2,5 @@
 /.idea/
 /build/
 /files/
-version.properties
+gradle.properties
 database.json
