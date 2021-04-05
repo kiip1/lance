@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.function.Consumer;
 
 public class ListenerManager extends Thread {
     private final ArrayList<Listener> listeners = new ArrayList<>();
@@ -57,13 +58,13 @@ public class ListenerManager extends Thread {
         listeners.add(listener);
     }
 
-    public <T> T resolve(ResolvableListener<T> listener, Runnable runnable) {
+    public <T> T resolve(ResolvableListener<T> listener, Runnable runnable, Consumer<LanceMessage> errorHandler) {
         listen(listener);
 
         try {
             return listener.resolve(this, runnable);
         } catch (ErrorStatusException e) {
-            e.printStackTrace();
+            errorHandler.accept(e.getLanceMessage());
         }
 
         return null;

@@ -1,5 +1,6 @@
 package nl.kiipdevelopment.lance.client;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import nl.kiipdevelopment.lance.configuration.Configuration;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
@@ -257,7 +258,7 @@ public class LanceClient extends Thread implements AutoCloseable {
             .setMessage("get " + key)
             .build()
             .toString()
-        ));
+        ), errorHandler);
     }
     
     /**
@@ -294,7 +295,52 @@ public class LanceClient extends Thread implements AutoCloseable {
             .setMessage("exists " + key)
             .build()
             .toString()
-        ));
+        ),  errorHandler);
+    }
+    
+    /**
+     * Same as #listFilenames() but non-blocking, using a future.
+     *
+     * @return A future for the list of filenames
+     */
+    public Future<String[]> listFilenamesAsync() {
+        return Executors
+                .newSingleThreadExecutor()
+                .submit(this::listFilenames);
+    }
+    
+    /**
+     * Lists the files in the storage directory. Be aware that if the server
+     * does have a json based storage instead of files, this will give an error.
+     *
+     * @return The list of filenames
+     */
+    public String[] listFilenames() {
+        while (socket == null || out == null || in == null || listenerManager == null || !authorised)
+            Thread.onSpinWait();
+        
+        int id = ThreadLocalRandom.current().nextInt();
+        
+        return listenerManager.resolve(new ResolvableListener<>(
+            id,
+            (lanceMessage) -> {
+                JsonArray array = lanceMessage.getJson().getAsJsonArray();
+                String[] result = new String[array.size()];
+                
+                for (int i = 0; i < result.length; i++) {
+                    JsonElement element = array.get(i);
+                    result[i] = element.getAsString();
+                }
+                
+                return result;
+            }
+        ), () -> out.println(new LanceMessageBuilder()
+            .setId(id)
+            .setStatusCode(StatusCode.OK)
+            .setMessage("list")
+            .build()
+            .toString()
+        ), errorHandler);
     }
 
     /**
@@ -327,7 +373,7 @@ public class LanceClient extends Thread implements AutoCloseable {
             batchQueue.clear();
 
             batchMode = false;
-        });
+        }, errorHandler);
     }
 
     private boolean set(String key, String value, JsonElement json) {
@@ -355,7 +401,7 @@ public class LanceClient extends Thread implements AutoCloseable {
                 .setJson(json)
                 .build()
                 .toString()
-            ));
+            ), errorHandler);
     }
     
     void setLastStatus(StatusCode lastStatus) {
