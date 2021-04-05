@@ -15,10 +15,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class LanceClient extends Thread implements AutoCloseable {
@@ -164,10 +161,8 @@ public class LanceClient extends Thread implements AutoCloseable {
      * @param value The string value to write to the file
      * @return A future for whether the set was successful or not
      */
-    public Future<Boolean> setFileAsync(String key, String value) {
-        return Executors
-                .newSingleThreadExecutor()
-                .submit(() -> setFile(key, value));
+    public CompletableFuture<Boolean> setFileAsync(String key, String value) {
+        return CompletableFuture.supplyAsync(() -> setFile(key, value));
     }
     
     /**
@@ -190,10 +185,8 @@ public class LanceClient extends Thread implements AutoCloseable {
      * @param value The string value to write to the file
      * @return A future for whether the set was successful or not
      */
-    public Future<Boolean> setJsonAsync(String key, JsonElement value) {
-        return Executors
-                .newSingleThreadExecutor()
-                .submit(() -> setJson(key, value));
+    public CompletableFuture<Boolean> setJsonAsync(String key, JsonElement value) {
+        return CompletableFuture.supplyAsync(() -> setJson(key, value));
     }
     
     /**
@@ -228,10 +221,8 @@ public class LanceClient extends Thread implements AutoCloseable {
      *
      * @see DataValue
      */
-    public Future<DataValue> getAsync(String key) {
-        return Executors
-                .newSingleThreadExecutor()
-                .submit(() -> get(key));
+    public CompletableFuture<DataValue> getAsync(String key) {
+        return CompletableFuture.supplyAsync(() -> get(key));
     }
     
     /**
@@ -267,10 +258,8 @@ public class LanceClient extends Thread implements AutoCloseable {
      * @param key The path, separated by dots
      * @return A future for whether the key exists or not
      */
-    public Future<Boolean> existsAsync(String key) {
-        return Executors
-                .newSingleThreadExecutor()
-                .submit(() -> exists(key));
+    public CompletableFuture<Boolean> existsAsync(String key) {
+        return CompletableFuture.supplyAsync(() -> exists(key));
     }
     
     /**
@@ -303,10 +292,8 @@ public class LanceClient extends Thread implements AutoCloseable {
      *
      * @return A future for the list of filenames
      */
-    public Future<String[]> listFilenamesAsync() {
-        return Executors
-                .newSingleThreadExecutor()
-                .submit(this::listFilenames);
+    public CompletableFuture<String[]> listFilenamesAsync() {
+        return CompletableFuture.supplyAsync(this::listFilenames);
     }
     
     /**
