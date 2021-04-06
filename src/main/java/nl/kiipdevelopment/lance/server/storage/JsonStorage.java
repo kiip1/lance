@@ -24,7 +24,7 @@ public class JsonStorage implements Storage<JsonElement> {
 			Files.write(location.toPath(), "{}".getBytes(StandardCharsets.UTF_8));
 		}
 
-		JsonElement element = JsonParser.parseReader(Files.newBufferedReader(location.toPath()));
+		JsonElement element = new JsonParser().parse(Files.newBufferedReader(location.toPath()));
 		if (!element.isJsonObject()) element = new JsonObject();
 		this.data = element.getAsJsonObject();
 	}

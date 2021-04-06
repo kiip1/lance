@@ -103,7 +103,7 @@ public class LanceMessage {
             
             if (hasJson == 1) {
                 String jsonPart = parts[3];
-                json = JsonParser.parseString(decode(jsonPart));
+                json = new JsonParser().parse(decode(jsonPart));
             }
             
             if (hasMessage == 1) {
