@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class ServerConnectionHandler extends Thread {
@@ -28,6 +29,12 @@ public class ServerConnectionHandler extends Thread {
         this.server = server;
         this.configuration = configuration;
         this.socket = socket;
+
+        try {
+            socket.setKeepAlive(true);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
