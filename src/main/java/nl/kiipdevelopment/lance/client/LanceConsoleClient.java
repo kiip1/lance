@@ -36,7 +36,11 @@ public class LanceConsoleClient extends LanceClient {
 
                 listenerManager.listen(lanceMessage -> {
                     if (lanceMessage == null) out.close();
-                    else System.out.println("[" + getName() + "] " + lanceMessage.getJson() + " " + lanceMessage.getMessage());
+                    else System.out.println(
+                        "[" + getName() + "] " +
+                        lanceMessage.getMessage() +
+                        (lanceMessage.getJson() == null ? "" : " $ " + lanceMessage.getJson())
+                    );
 
                     return false;
                 });
@@ -44,19 +48,19 @@ public class LanceConsoleClient extends LanceClient {
                 while (true) {
                     try {
                         String line = scanner.nextLine();
-                        String[] parts = line.split("(?<!\\\\)\\|");
+                        String[] parts = line.split("(?<!\\\\)\\$");
 
                         if (parts.length == 2) {
-                            JsonElement element = new Gson().fromJson(parts[1].replace("\\|", "|"), JsonElement.class);
+                            JsonElement element = new Gson().fromJson(parts[1].replace("\\$", "$"), JsonElement.class);
 
                             if (element.isJsonObject())
                                 execute(
-                                    parts[0].replace("\\|", "|"),
+                                    parts[0].replace("\\$", "$"),
                                     element.getAsJsonObject()
                                 );
                             else
                                 execute(
-                                    parts[0].replace("\\|", "|"),
+                                    parts[0].replace("\\$", "$"),
                                     element
                                 );
                         } else execute(line);

@@ -2,6 +2,7 @@ package nl.kiipdevelopment.lance;
 
 import com.google.gson.JsonPrimitive;
 import nl.kiipdevelopment.lance.client.LanceClient;
+import nl.kiipdevelopment.lance.client.LanceConsoleClient;
 import nl.kiipdevelopment.lance.server.LanceServer;
 
 import java.util.UUID;
@@ -10,7 +11,7 @@ public class Main {
     public static void main(String[] args) {
         new LanceServer().start();
 
-        LanceClient client = new LanceClient();
+        LanceClient client = new LanceConsoleClient();
 
         client.start();
 
@@ -20,7 +21,7 @@ public class Main {
         // Do this to make sure it's fair.
         // If you don't do this, the last one you run will always be the fastest.
 
-        with(client, amount);
+        // with(client, amount);
         // without(client, amount);
     }
 
@@ -29,7 +30,7 @@ public class Main {
 
         client.batch(() -> {
             for (int i = 0; i < amount; i++)
-                client.setJson("keyw" + i, new JsonPrimitive(UUID.randomUUID().toString()));
+                client.setJson("keyw" + i, new JsonPrimitive(UUID.randomUUID() + "/" + System.currentTimeMillis()));
         });
 
         System.out.println(amount + " with batch: " + (System.currentTimeMillis() - start) + "ms.");
@@ -39,7 +40,7 @@ public class Main {
         long start = System.currentTimeMillis();
 
         for (int i = 0; i < amount; i++)
-            client.setJson("keyo" + i, new JsonPrimitive("valueo" + i));
+            client.setJson("keyo" + i, new JsonPrimitive(UUID.randomUUID() + "/" + System.currentTimeMillis()));
 
         System.out.println(amount + " without batch: " + (System.currentTimeMillis() - start) + "ms.");
     }

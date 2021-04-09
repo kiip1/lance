@@ -36,7 +36,7 @@ public class ListenerManager extends Thread {
                 for (Listener listener : tempListeners) {
                     final String finalLine = line;
 
-                    executor.submit(() -> {
+                    executor.execute(() -> {
                         LanceMessage lanceMessage = LanceMessage.getFromString(finalLine);
 
                         boolean success = listener.run(lanceMessage);

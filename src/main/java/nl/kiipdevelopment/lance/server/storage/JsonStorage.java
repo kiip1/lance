@@ -1,15 +1,14 @@
 package nl.kiipdevelopment.lance.server.storage;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class JsonStorage implements Storage<JsonElement> {
 	private final Gson gson = new Gson();
@@ -49,11 +48,6 @@ public class JsonStorage implements Storage<JsonElement> {
 		}
 		
 		return element;
-	}
-	
-	@Override
-	public synchronized boolean exists(String key) {
-		return get(key) != null;
 	}
 	
 	@Override
@@ -114,14 +108,33 @@ public class JsonStorage implements Storage<JsonElement> {
 			}
 		}
 	}
-	
+
 	@Override
-	public boolean isJson() {
-		return true;
+	public JsonArray list() {
+		JsonArray array = new JsonArray();
+
+		data
+			.entrySet()
+			.stream()
+			.map(Map.Entry::getKey)
+			.collect(Collectors.toList())
+			.forEach(array::add);
+
+		return array;
+	}
+
+	@Override
+	public synchronized boolean exists(String key) {
+		return get(key) != null;
 	}
 
 	@Override
 	public synchronized void save() throws IOException {
 		Files.write(location.toPath(), gson.toJson(data).getBytes(StandardCharsets.UTF_8));
+	}
+
+	@Override
+	public boolean isJson() {
+		return true;
 	}
 }

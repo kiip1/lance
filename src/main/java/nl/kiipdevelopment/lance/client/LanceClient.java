@@ -355,7 +355,10 @@ public class LanceClient extends Thread implements AutoCloseable {
                 e.printStackTrace();
             }
 
-            execute(id, "batch " + String.join("/", batchQueue));
+            execute(
+                id,
+                "batch " + String.join("/", batchQueue)
+            );
 
             batchQueue.clear();
 

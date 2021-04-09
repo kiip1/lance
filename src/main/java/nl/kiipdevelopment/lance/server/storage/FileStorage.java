@@ -4,9 +4,7 @@ import com.google.gson.JsonArray;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class FileStorage implements Storage<byte[]> {
 	private final File location;
@@ -36,29 +34,6 @@ public class FileStorage implements Storage<byte[]> {
 		return null;
 	}
 	
-	public JsonArray list() {
-		location.mkdirs();
-		
-		JsonArray array = new JsonArray();
-		
-		if (location.isDirectory()) {
-			String[] files = location.list();
-			
-			if (files == null)
-				return array;
-			
-			for (String file : files)
-				array.add(file);
-		}
-		
-		return array;
-	}
-	
-	@Override
-	public boolean exists(String key) throws Exception {
-		return get(key) != null;
-	}
-	
 	@Override
 	public void set(@NotNull String key, byte[] value) throws Exception {
 		location.mkdirs();
@@ -70,6 +45,30 @@ public class FileStorage implements Storage<byte[]> {
 
 			Files.write(target.toPath(), value);
 		}
+	}
+
+	@Override
+	public boolean exists(String key) throws Exception {
+		return get(key) != null;
+	}
+
+	@Override
+	public JsonArray list() {
+		location.mkdirs();
+
+		JsonArray array = new JsonArray();
+
+		if (location.isDirectory()) {
+			String[] files = location.list();
+
+			if (files == null)
+				return array;
+
+			for (String file : files)
+				array.add(file);
+		}
+
+		return array;
 	}
 
 	@Override

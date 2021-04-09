@@ -75,15 +75,24 @@ public class LanceMessage {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append(id).append(" ").append(code.getId()).append(" ").append(hasJson() ? 1 : 0).append(hasMessage() ? 1 : 0);
+
+        result
+            .append(id)
+            .append(" ")
+            .append(code.getId())
+            .append(" ");
+
+        result.append(
+            (hasJson() ? 2 : 0) +
+            (hasMessage() ? 1 : 0)
+        );
         
-        if (hasJson()) {
+        if (hasJson())
             result.append(" ").append(encode(GSON.toJson(json)));
-        }
-        if (hasMessage()) {
+
+        if (hasMessage())
             result.append(" ").append(encode(message));
-        }
-        
+
         return result.toString();
     }
 
@@ -93,25 +102,33 @@ public class LanceMessage {
 
             int id = Integer.parseInt(parts[0]);
             StatusCode code = StatusCode.fromId(Integer.parseInt(parts[1]));
-            
-            String flags = parts[2];
-            int hasJson = Integer.parseInt(flags.substring(0, 1));
-            int hasMessage = Integer.parseInt(flags.substring(1, 2));
+            String flags = String.format("%2s", Integer.toBinaryString(
+                Integer.parseInt(parts[2]))).replace(' ', '0');
+
+            boolean hasJson = flags.charAt(0) == '1'; // 10
+            boolean hasMessage = flags.charAt(1) == '1'; // 01
             
             JsonElement json = null;
             String message = null;
             
-            if (hasJson == 1) {
+            if (hasJson) {
                 String jsonPart = parts[3];
+
                 json = new JsonParser().parse(decode(jsonPart));
             }
-            
-            if (hasMessage == 1) {
-                String messagePart = hasJson == 1 ? parts[4] : parts[3];
+
+            if (hasMessage) {
+                String messagePart = hasJson ? parts[4] : parts[3];
+
                 message = decode(messagePart);
             }
 
-            return new LanceMessage(id, code, message, json);
+            return new LanceMessage(
+                id,
+                code,
+                message,
+                json
+            );
         } catch (Exception e) {
             System.out.println("[" + Thread.currentThread().getName() + "] " + "Invalid message: " + e);
         }
@@ -120,7 +137,8 @@ public class LanceMessage {
     }
 
     private static String encode(String decoded) {
-        if (decoded == null) decoded = "null";
+        if (decoded == null)
+            decoded = "null";
         
         return Base64
             .getEncoder()

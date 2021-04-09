@@ -18,17 +18,13 @@ public class ListCommand extends Command {
 		LanceMessageBuilder builder = new LanceMessageBuilder();
 		
 		builder.setId(id).setStatusCode(StatusCode.OK);
-		
-		if (handler.server.storage.isJson()) {
-			builder.setStatusCode(StatusCode.ERROR);
-			builder.setMessage("Not file storage");
-		} else {
-			try {
-				builder.setJson(((FileStorage) handler.server.storage).list());
-			} catch (Exception e) {
-				e.printStackTrace();
-				return getInternalErrorMessage(id);
-			}
+
+		try {
+			builder.setJson(handler.server.storage.list());
+		} catch (Exception e) {
+			e.printStackTrace();
+
+			return getInternalErrorMessage(id);
 		}
 		
 		return builder.build();
