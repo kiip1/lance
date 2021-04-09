@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public class LanceClient extends Thread implements AutoCloseable {
     private boolean batchMode = false;
     private StatusCode lastStatus = StatusCode.OK;
     private Consumer<LanceMessage> errorHandler = (code) -> {};
+    private Consumer<InetAddress> completeCallback = (address) -> {};
 
     public LanceClient() {
         this(DefaultConfiguration.HOST, DefaultConfiguration.PORT, DefaultConfiguration.getDefaultConfiguration());
@@ -88,6 +90,8 @@ public class LanceClient extends Thread implements AutoCloseable {
                 return false;
             });
             else authorised = true;
+
+            completeCallback.accept(socket.getLocalAddress());
         } catch (IOException e) {
             if (retries++ < configuration.getMaxRetries() || configuration.getMaxRetries() == -1) {
                 try {
@@ -404,6 +408,10 @@ public class LanceClient extends Thread implements AutoCloseable {
     
     public void setErrorHandler(Consumer<LanceMessage> errorHandler) {
         this.errorHandler = errorHandler;
+    }
+    
+    public void setCompleteCallback(Consumer<InetAddress> completeCallback) {
+        this.completeCallback = completeCallback;
     }
     
     @Override
