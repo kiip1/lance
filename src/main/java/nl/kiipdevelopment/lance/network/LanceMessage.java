@@ -101,11 +101,10 @@ public class LanceMessage {
 
             int id = Integer.parseInt(parts[0]);
             StatusCode code = StatusCode.fromId(Integer.parseInt(parts[1]));
-            String flags = String.format("%2s", Integer.toBinaryString(
-                Integer.parseInt(parts[2]))).replace(' ', '0');
+            String flags = parts[2];
 
-            boolean hasJson = flags.charAt(0) == '1'; // 10
-            boolean hasMessage = flags.charAt(1) == '1'; // 01
+            boolean hasJson = flags.charAt(0) == '1';
+            boolean hasMessage = flags.charAt(1) == '1';
             
             JsonElement json = null;
             String message = null;
