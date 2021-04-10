@@ -316,11 +316,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         
         return listenerManager.resolve(new ResolvableListener<>(
             id,
-            (lanceMessage) -> {
-                System.out.println("[" + getName() + "] " + "Mapping filenames...");
-                
-                return lanceMessage.getJson().getAsJsonArray();
-            }
+            (lanceMessage) -> lanceMessage.getJson().getAsJsonArray()
         ), () -> out.println(new LanceMessageBuilder()
             .setId(id)
             .setStatusCode(StatusCode.OK)
