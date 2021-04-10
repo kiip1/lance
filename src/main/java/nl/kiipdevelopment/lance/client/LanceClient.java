@@ -83,15 +83,17 @@ public class LanceClient extends Thread implements AutoCloseable {
                     ));
                 } else if (lanceMessage.getCode() == StatusCode.ACCESS_GRANTED) {
                     authorised = true;
+                    completeCallback.accept(socket.getLocalAddress());
 
                     return true;
                 }
 
                 return false;
             });
-            else authorised = true;
-
-            completeCallback.accept(socket.getLocalAddress());
+            else {
+                authorised = true;
+                completeCallback.accept(socket.getLocalAddress());
+            }
         } catch (IOException e) {
             if (retries++ < configuration.getMaxRetries() || configuration.getMaxRetries() == -1) {
                 try {
