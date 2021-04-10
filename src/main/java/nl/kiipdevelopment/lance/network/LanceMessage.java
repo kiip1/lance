@@ -82,10 +82,9 @@ public class LanceMessage {
             .append(code.getId())
             .append(" ");
 
-        result.append(
-            (hasJson() ? 2 : 0) +
-            (hasMessage() ? 1 : 0)
-        );
+        result
+            .append(hasJson() ? '1' : '0')
+            .append(hasMessage() ? '1' : '0');
         
         if (hasJson())
             result.append(" ").append(encode(GSON.toJson(json)));

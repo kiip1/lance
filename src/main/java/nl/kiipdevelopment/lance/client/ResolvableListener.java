@@ -5,11 +5,12 @@ import nl.kiipdevelopment.lance.network.StatusCode;
 
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class ResolvableListener<T> implements Listener {
     volatile LanceMessage value = null;
 
-    private final Function<LanceMessage, Boolean> filter;
+    private final Predicate<LanceMessage> filter;
     private final Function<LanceMessage, T> resolver;
 
     public ResolvableListener(int id, Function<LanceMessage, T> resolver) {
@@ -17,7 +18,7 @@ public class ResolvableListener<T> implements Listener {
         this.resolver = resolver;
     }
 
-    public ResolvableListener(Function<LanceMessage, Boolean> filter, Function<LanceMessage, T> resolver) {
+    public ResolvableListener(Predicate<LanceMessage> filter, Function<LanceMessage, T> resolver) {
         this.filter = filter;
         this.resolver = resolver;
     }
@@ -45,10 +46,7 @@ public class ResolvableListener<T> implements Listener {
         if (lanceMessage == null)
             return false;
 
-        if (lanceMessage.getMessage() == null)
-            return false;
-
-        if (filter.apply(lanceMessage)) {
+        if (filter.test(lanceMessage)) {
             value = lanceMessage;
 
             return true;

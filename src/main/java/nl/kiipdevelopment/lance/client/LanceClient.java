@@ -298,7 +298,7 @@ public class LanceClient extends Thread implements AutoCloseable {
      *
      * @return A future for the list of filenames
      */
-    public CompletableFuture<String[]> listFilenamesAsync() {
+    public CompletableFuture<JsonArray> listFilenamesAsync() {
         return CompletableFuture.supplyAsync(this::listFilenames);
     }
     
@@ -308,7 +308,7 @@ public class LanceClient extends Thread implements AutoCloseable {
      *
      * @return The list of filenames
      */
-    public String[] listFilenames() {
+    public JsonArray listFilenames() {
         while (socket == null || out == null || in == null || listenerManager == null || !authorised)
             Thread.onSpinWait();
         
@@ -317,15 +317,9 @@ public class LanceClient extends Thread implements AutoCloseable {
         return listenerManager.resolve(new ResolvableListener<>(
             id,
             (lanceMessage) -> {
-                JsonArray array = lanceMessage.getJson().getAsJsonArray();
-                String[] result = new String[array.size()];
+                System.out.println("[" + getName() + "] " + "Mapping filenames...");
                 
-                for (int i = 0; i < result.length; i++) {
-                    JsonElement element = array.get(i);
-                    result[i] = element.getAsString();
-                }
-                
-                return result;
+                return lanceMessage.getJson().getAsJsonArray();
             }
         ), () -> out.println(new LanceMessageBuilder()
             .setId(id)
