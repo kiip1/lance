@@ -409,11 +409,17 @@ public class LanceClient extends Thread implements AutoCloseable {
     @Override
     public void close() {
         try {
-            in.close();
-            out.close();
-            socket.close();
-            listenerManager.close();
-        } catch (IOException e) {
+            Executors.newSingleThreadExecutor().submit(() -> {
+                try {
+                    in.close();
+                    out.close();
+                    socket.close();
+                    listenerManager.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
     }
