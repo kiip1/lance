@@ -3,7 +3,6 @@ package nl.kiipdevelopment.lance.configuration;
 import nl.kiipdevelopment.lance.server.storage.StorageType;
 
 import java.io.File;
-import java.nio.file.Path;
 
 public class DefaultConfiguration {
     public static final String HOST = "127.0.0.1";

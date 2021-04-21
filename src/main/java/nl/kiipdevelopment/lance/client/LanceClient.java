@@ -75,13 +75,13 @@ public class LanceClient extends Thread implements AutoCloseable {
             if (configuration.isPasswordEnabled()) listenerManager.listen(lanceMessage -> {
                 if (lanceMessage == null)
                     out.close();
-                else if (lanceMessage.getCode() == StatusCode.AUTH_REQUIRED) {
+                else if (lanceMessage.getCode() == StatusCode.AUTH_REQUIRED)
                     out.println(new LanceMessage(
                         lanceMessage.getId(),
                         StatusCode.OK,
                         configuration.getPassword()
                     ));
-                } else if (lanceMessage.getCode() == StatusCode.ACCESS_GRANTED) {
+                else if (lanceMessage.getCode() == StatusCode.ACCESS_GRANTED) {
                     authorised = true;
                     completeCallback.accept(socket.getLocalAddress());
 
@@ -99,7 +99,14 @@ public class LanceClient extends Thread implements AutoCloseable {
                 try {
                     Thread.sleep(configuration.getRetryTimeout());
 
-                    System.out.println("[" + getName() + "] " + e.getMessage() + " | Retrying..." + (configuration.getMaxRetries() == -1 ? "" : "(" + retries + "/" + configuration.getMaxRetries() + ")"));
+                    System.out.println(
+                        "[" + getName() + "] " +
+                        e.getMessage() + " | Retrying..." +
+                        (configuration.getMaxRetries() == -1
+                            ? ""
+                            : "(" + retries + "/" + configuration.getMaxRetries() + ")"
+                        )
+                    );
 
                     run();
                 } catch (InterruptedException e2) {
