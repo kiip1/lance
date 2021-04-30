@@ -19,10 +19,11 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
-public class LanceClient extends Thread implements AutoCloseable {
+public class LanceClient implements AutoCloseable {
     private final Configuration configuration;
     private final String host;
     private final int port;
+    protected final String name;
 
     public Socket socket;
     public PrintWriter out;
@@ -54,16 +55,15 @@ public class LanceClient extends Thread implements AutoCloseable {
         this(host, port, configuration, "Lance-Client");
     }
 
-    protected LanceClient(String host, int port, Configuration configuration, String threadName) {
-        super(threadName);
+    protected LanceClient(String host, int port, Configuration configuration, String name) {
+        this.name = name;
 
         this.host = host;
         this.port = port;
         this.configuration = configuration;
     }
 
-    @Override
-    public void run() {
+    public void connect() {
         try {
             socket = new Socket(host, port);
             out = new PrintWriter(socket.getOutputStream(), true);
@@ -99,9 +99,9 @@ public class LanceClient extends Thread implements AutoCloseable {
                 try {
                     Thread.sleep(configuration.getRetryTimeout());
 
-                    System.out.println("[" + getName() + "] " + e.getMessage() + " | Retrying..." + (configuration.getMaxRetries() == -1 ? "" : "(" + retries + "/" + configuration.getMaxRetries() + ")"));
+                    System.out.println("[" + name + "] " + e.getMessage() + " | Retrying..." + (configuration.getMaxRetries() == -1 ? "" : "(" + retries + "/" + configuration.getMaxRetries() + ")"));
 
-                    run();
+                    connect();
                 } catch (InterruptedException e2) {
                     e2.printStackTrace();
                 }
@@ -409,17 +409,11 @@ public class LanceClient extends Thread implements AutoCloseable {
     @Override
     public void close() {
         try {
-            Executors.newSingleThreadExecutor().submit(() -> {
-                try {
-                    in.close();
-                    out.close();
-                    socket.close();
-                    listenerManager.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }).get(5, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            listenerManager.close();
+            in.close();
+            out.close();
+            socket.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

@@ -32,12 +32,12 @@ public class LanceConsoleClient extends LanceClient {
                 while (socket == null || out == null || in == null || listenerManager == null)
                     Thread.onSpinWait();
 
-                System.out.println("[" + getName() + "] " + "Console client started on " + socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort() + ".");
+                System.out.println("[" + name + "] " + "Console client started on " + socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort() + ".");
 
                 listenerManager.listen(lanceMessage -> {
                     if (lanceMessage == null) out.close();
                     else System.out.println(
-                        "[" + getName() + "] " +
+                        "[" + name + "] " +
                         lanceMessage.getMessage() +
                         (lanceMessage.getJson() == null ? "" : " $ " + lanceMessage.getJson())
                     );

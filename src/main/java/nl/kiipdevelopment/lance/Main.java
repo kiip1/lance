@@ -1,6 +1,7 @@
 package nl.kiipdevelopment.lance;
 
 import nl.kiipdevelopment.lance.client.LanceConsoleClient;
+import nl.kiipdevelopment.lance.configuration.ConfigurationBuilder;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.server.LanceServer;
 
@@ -77,10 +78,18 @@ public class Main {
             else clientIpAndPort = line.split(":");
         }
 
+        System.out.println("Enter the password (Leave empty for no password)");
+
+        String password = scanner.nextLine();
+
+        ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+        if (!password.isEmpty())
+            configurationBuilder.setPassword(password);
+
         if (serverIpAndPort != null)
-            new LanceServer(serverIpAndPort[0], Integer.parseInt(serverIpAndPort[1])).start();
+            new LanceServer(serverIpAndPort[0], Integer.parseInt(serverIpAndPort[1]), configurationBuilder.buildServerConfiguration()).start();
 
         if (clientIpAndPort != null)
-            new LanceConsoleClient(clientIpAndPort[0], Integer.parseInt(clientIpAndPort[1])).start();
+            new LanceConsoleClient(clientIpAndPort[0], Integer.parseInt(clientIpAndPort[1]), configurationBuilder.build()).connect();
     }
 }

@@ -12,6 +12,8 @@ import java.util.function.Consumer;
 public class ListenerManager extends Thread {
     private final ArrayList<Listener> listeners = new ArrayList<>();
     private final BufferedReader in;
+    
+    private boolean active;
 
     public final LanceClient client;
     public final ThreadPoolExecutor executor;
@@ -22,6 +24,7 @@ public class ListenerManager extends Thread {
         this.client = client;
         this.in = in;
         this.executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        this.active = true;
     }
 
     @Override
@@ -29,25 +32,25 @@ public class ListenerManager extends Thread {
         try {
             String line;
 
-            while ((line = in.readLine()) != null) {
-                @SuppressWarnings("unchecked")
-                final ArrayList<Listener> tempListeners = (ArrayList<Listener>) listeners.clone();
+            while (active) {
+                if (!in.ready()) {
+                    Thread.onSpinWait();
+                } else if ((line = in.readLine()) != null) {
+                    @SuppressWarnings("unchecked")
+                    final ArrayList<Listener> tempListeners = (ArrayList<Listener>) listeners.clone();
 
-                for (Listener listener : tempListeners) {
-                    final String finalLine = line;
+                    for (Listener listener : tempListeners) {
+                        LanceMessage lanceMessage = LanceMessage.getFromString(line);
 
-                    executor.execute(() -> {
-                        LanceMessage lanceMessage = LanceMessage.getFromString(finalLine);
+                        executor.execute(() -> {
+                            boolean success = listener.run(lanceMessage);
 
-                        boolean success = listener.run(lanceMessage);
-
-                        if (success)
-                            listeners.remove(listener);
-                    });
+                            if (success)
+                                listeners.remove(listener);
+                        });
+                    }
                 }
             }
-
-            close();
         } catch (IOException e) {
             if (!e.getMessage().equals("Socket closed"))
                 e.printStackTrace();
@@ -72,5 +75,7 @@ public class ListenerManager extends Thread {
 
     public void close() {
         listeners.clear();
+        executor.shutdownNow();
+        active = false;
     }
 }

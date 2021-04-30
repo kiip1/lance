@@ -13,7 +13,7 @@ public class Main {
 
         LanceClient client = new LanceConsoleClient();
 
-        client.start();
+        client.connect();
 
         int amount = 10000;
 
