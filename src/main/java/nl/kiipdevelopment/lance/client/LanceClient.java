@@ -105,7 +105,10 @@ public class LanceClient implements AutoCloseable {
                 } catch (InterruptedException e2) {
                     e2.printStackTrace();
                 }
-            } else e.printStackTrace();
+            } else {
+                e.printStackTrace();
+                errorHandler.accept(new LanceMessageBuilder().setStatusCode(StatusCode.ERROR).setMessage("Unable to connect to server").build());
+            }
         }
     }
 
@@ -409,10 +412,10 @@ public class LanceClient implements AutoCloseable {
     @Override
     public void close() {
         try {
-            listenerManager.close();
-            in.close();
-            out.close();
-            socket.close();
+            if (listenerManager != null) listenerManager.close();
+            if (in != null) in.close();
+            if (out != null) out.close();
+            if (socket != null) socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

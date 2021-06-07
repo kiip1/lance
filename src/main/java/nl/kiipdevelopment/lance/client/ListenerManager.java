@@ -5,6 +5,7 @@ import nl.kiipdevelopment.lance.network.LanceMessage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Consumer;
@@ -36,17 +37,15 @@ public class ListenerManager extends Thread {
                 if (!in.ready()) {
                     Thread.onSpinWait();
                 } else if ((line = in.readLine()) != null) {
-                    @SuppressWarnings("unchecked")
-                    final ArrayList<Listener> tempListeners = (ArrayList<Listener>) listeners.clone();
+                    LanceMessage lanceMessage = LanceMessage.getFromString(line);
 
-                    for (Listener listener : tempListeners) {
-                        LanceMessage lanceMessage = LanceMessage.getFromString(line);
+                    for (Iterator<Listener> iterator = listeners.iterator(); iterator.hasNext();) {
+                        Listener listener = iterator.next();
 
                         executor.execute(() -> {
                             boolean success = listener.run(lanceMessage);
 
-                            if (success)
-                                listeners.remove(listener);
+                            if (success) iterator.remove();
                         });
                     }
                 }
@@ -75,7 +74,7 @@ public class ListenerManager extends Thread {
 
     public void close() {
         listeners.clear();
-        executor.shutdownNow();
+        executor.shutdown();
         active = false;
     }
 }
