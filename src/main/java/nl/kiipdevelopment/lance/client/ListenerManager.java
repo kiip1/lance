@@ -39,13 +39,14 @@ public class ListenerManager extends Thread {
                 } else if ((line = in.readLine()) != null) {
                     LanceMessage lanceMessage = LanceMessage.getFromString(line);
 
-                    for (Iterator<Listener> iterator = listeners.iterator(); iterator.hasNext();) {
-                        Listener listener = iterator.next();
+                    @SuppressWarnings("unchecked")
+                    final ArrayList<Listener> tempListeners = (ArrayList<Listener>) listeners.clone();
 
+                    for (Listener listener : tempListeners) {
                         executor.execute(() -> {
                             boolean success = listener.run(lanceMessage);
 
-                            if (success) iterator.remove();
+                            if (success) listeners.remove(listener);
                         });
                     }
                 }
