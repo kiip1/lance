@@ -18,8 +18,8 @@ public class ServerConnectionHandler extends Thread {
     public final ServerConfiguration configuration;
     public final Socket socket;
 
-    private PrintWriter out;
-    private BufferedReader in;
+    public PrintWriter out;
+    public BufferedReader in;
 
     private boolean active = true;
 

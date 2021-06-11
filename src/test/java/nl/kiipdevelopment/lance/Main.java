@@ -2,7 +2,6 @@ package nl.kiipdevelopment.lance;
 
 import com.google.gson.JsonPrimitive;
 import nl.kiipdevelopment.lance.client.LanceClient;
-import nl.kiipdevelopment.lance.client.LanceConsoleClient;
 import nl.kiipdevelopment.lance.server.LanceServer;
 
 import java.util.UUID;
@@ -11,7 +10,7 @@ public class Main {
     public static void main(String[] args) {
         new LanceServer().start();
 
-        LanceClient client = new LanceConsoleClient();
+        LanceClient client = new LanceClient();
 
         client.connect();
 

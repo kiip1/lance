@@ -3,20 +3,20 @@ package nl.kiipdevelopment.lance.configuration;
 import nl.kiipdevelopment.lance.server.storage.StorageType;
 
 import java.io.File;
-import java.nio.file.Path;
 
 public class ServerConfiguration extends Configuration {
     private final int backlog;
     private final StorageType storageType;
     private final File storageLocation;
-    private final int autosaveInterval;
+    private final int autoSaveInterval;
 
-    public ServerConfiguration(StorageType storageType, File storageLocation, int maxRetries, int retryTimeout, int backlog, int autosaveInterval, boolean passwordEnabled, String password) {
+    public ServerConfiguration(StorageType storageType, File storageLocation, int maxRetries, int retryTimeout, int backlog, int autoSaveInterval, boolean passwordEnabled, String password) {
         super(maxRetries, retryTimeout, passwordEnabled, password);
+
         this.storageType = storageType;
         this.storageLocation = storageLocation;
         this.backlog = backlog;
-        this.autosaveInterval = autosaveInterval;
+        this.autoSaveInterval = autoSaveInterval;
     }
 
     public int getBacklog() {
@@ -31,7 +31,7 @@ public class ServerConfiguration extends Configuration {
         return storageLocation;
     }
     
-    public int getAutosaveInterval() {
-        return autosaveInterval;
+    public int getAutoSaveInterval() {
+        return autoSaveInterval;
     }
 }

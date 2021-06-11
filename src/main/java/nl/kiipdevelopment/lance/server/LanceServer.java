@@ -18,12 +18,13 @@ public class LanceServer extends Thread {
     private final String host;
     private final int port;
 
-    private ServerSocket serverSocket;
-    public Storage<?> storage;
-
     public final List<ServerConnectionHandler> handlers = new ArrayList<>();
     public final List<String> connections = new ArrayList<>();
+
+    private ServerSocket serverSocket;
+
     public boolean active = false;
+    public Storage<?> storage;
 
     public LanceServer() {
         this(DefaultConfiguration.HOST, DefaultConfiguration.PORT, DefaultConfiguration.getDefaultServerConfiguration());
@@ -69,6 +70,7 @@ public class LanceServer extends Thread {
             while (active)
                 try {
                     ServerConnectionHandler handler = new ServerConnectionHandler(this, configuration, serverSocket.accept());
+
                     handler.start();
 
                     handlers.add(handler);

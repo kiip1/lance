@@ -3,7 +3,6 @@ package nl.kiipdevelopment.lance.configuration;
 import nl.kiipdevelopment.lance.server.storage.StorageType;
 
 import java.io.File;
-import java.nio.file.Path;
 
 public class ConfigurationBuilder {
     private int maxRetries = DefaultConfiguration.maxRetries;
@@ -39,10 +38,7 @@ public class ConfigurationBuilder {
 
         return this;
     }
-    
-    /**
-     * In seconds
-     */
+
     public ConfigurationBuilder setAutosaveInterval(int autosaveInterval) {
         this.autosaveInterval = autosaveInterval;
 
