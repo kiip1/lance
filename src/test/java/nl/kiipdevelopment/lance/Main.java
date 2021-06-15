@@ -1,6 +1,7 @@
 package nl.kiipdevelopment.lance;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
@@ -9,7 +10,7 @@ public class Main {
 
         LanceClient client = new LanceClient();
 
-        test(client);
+        test2(client);
     }
 
     private static void test(LanceClient client) {
@@ -32,6 +33,19 @@ public class Main {
                     System.out.println(client.set(key, value.getBytes()));
                 }
             }
+        }
+    }
+
+    private static void test2(LanceClient client) {
+        Random random = new Random();
+
+        for (int i = 0; i < 1000; i++) {
+            byte[] next = new byte[4];
+            random.nextBytes(next);
+
+            boolean success = client.set(String.valueOf(i), next);
+            Validate.ensure(success, "Fail (success) at " + i + ".");
+            Validate.ensure(client.get(String.valueOf(i)) == next, "Fail (get) at " + i + ".");
         }
     }
 }

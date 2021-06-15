@@ -20,8 +20,9 @@ public class Validate {
 		}
 	}
 
+	@SuppressWarnings("Contract")
 	@Contract("false -> fail")
-	public static void assume(boolean condition) {}
+	public static void assume(@SuppressWarnings("unused") boolean condition) {}
 
 	@Contract("true, _ -> fail")
 	public static void never(boolean condition, String message) {
