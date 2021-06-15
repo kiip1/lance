@@ -1,0 +1,6 @@
+/.gradle/
+/.idea/
+/build/
+/files/
+gradle.properties
+database.json

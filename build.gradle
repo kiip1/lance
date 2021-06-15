@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group 'nl.kiipdevelopment'
+version '2.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.jetbrains:annotations:20.1.0'
+    implementation 'com.google.code.gson:gson:2.8.0'
+}
+
+jar {
+    baseName = 'lance'
+}
+
+task standaloneJar(type: Jar) {
+    baseName = 'lance-standalone'
+
+    manifest {
+        attributes(
+                'Main-Class': 'nl.kiipdevelopment.lance.Main'
+        )
+    }
+
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+    with jar
+}
+
+jar.finalizedBy(standaloneJar)
+
+publishing {
+    repositories {
+        maven {
+            url repoWriteUrl
+        }
+    }
+
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'lance'
+
+            from components.java
+        }
+    }
+}
