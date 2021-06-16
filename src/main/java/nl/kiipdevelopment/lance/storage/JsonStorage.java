@@ -36,7 +36,7 @@ public class JsonStorage implements Storage {
 		return gson.toJson(get0(key)).getBytes();
 	}
 
-	public synchronized JsonElement get0(@NotNull String key) {
+	private synchronized JsonElement get0(@NotNull String key) {
 		String[] path = key.split("\\.");
 
 		if (path.length == 0) {
@@ -75,10 +75,18 @@ public class JsonStorage implements Storage {
 
 	@Override
 	public synchronized boolean set(String key, byte[] value) {
-		return set0(key, gson.fromJson(new String(value), JsonElement.class));
+		boolean success = set0(key, gson.fromJson(new String(value), JsonElement.class));
+
+		try {
+			save();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return success;
 	}
 
-	public synchronized boolean set0(@NotNull String key, JsonElement value) {
+	private synchronized boolean set0(@NotNull String key, JsonElement value) {
 		String[] path = key.split("\\.");
 
 		if (path.length == 0) {

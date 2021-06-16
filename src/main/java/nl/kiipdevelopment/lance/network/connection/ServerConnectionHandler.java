@@ -78,8 +78,6 @@ public class ServerConnectionHandler {
                 }
 
                 if (authorised) {
-                    System.out.println("IT WORKS 2");
-
                     ServerWelcomePacket welcomePacket = new ServerWelcomePacket();
                     fire(welcomePacket);
 

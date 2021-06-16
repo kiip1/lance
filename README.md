@@ -9,18 +9,20 @@ Download the latest release and put it in your dependencies.
 ## Examples
 Incremental counter. Every time you run this program the counter increments by 1.
 ```java
-new LanceServer().start();
+public class IncrementExample {
+	public static void main(String[] args) {
+		new LanceServer();
 
-LanceClient lanceClient = new LanceClient();
+		LanceClient lanceClient = new LanceClient();
 
-lanceClient.start();
+		int amount = 0;
 
-int amount = 0;
+		if (lanceClient.existsJson("amount"))
+			amount = lanceClient.getJson("amount").getAsInt();
 
-if (lanceClient.exists("amount"))
-    amount = lanceClient.getJson("amount").getAsInt();
+		lanceClient.setJson("amount", new JsonPrimitive(++amount));
 
-lanceClient.setJson("amount", new JsonPrimitive(++amount));
-
-System.out.println(amount);
+		System.out.println(amount);
+	}
+}
 ```

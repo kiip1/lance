@@ -60,8 +60,6 @@ public class ClientConnectionHandler {
         }
 
         if (authorised) {
-            System.out.println("IT WORKS 1");
-
             Executors.newSingleThreadScheduledExecutor().execute(() -> {
                 while (active) {
                     ServerPacket packet = get();
