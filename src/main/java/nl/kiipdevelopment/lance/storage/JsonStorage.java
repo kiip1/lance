@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class JsonStorage implements Storage {
-	private final Gson gson = new Gson();
+	private static final Gson gson = new Gson();
 
 	private final File location;
 	private final JsonObject data;
@@ -32,13 +32,8 @@ public class JsonStorage implements Storage {
 	}
 
 	@Override
-	public byte[] get(String key) {
+	public synchronized byte[] get(String key) {
 		return gson.toJson(get0(key)).getBytes();
-	}
-
-	@Override
-	public boolean set(String key, byte[] value) {
-		return set0(key, gson.fromJson(new String(value), JsonElement.class));
 	}
 
 	public synchronized JsonElement get0(@NotNull String key) {
@@ -51,13 +46,13 @@ public class JsonStorage implements Storage {
 		if (path.length == 1) {
 			return data.get(path[0]);
 		}
-		
+
 		JsonElement element = data.get(path[0]);
 
 		if (element == null || !element.isJsonObject()) {
 			return null;
 		}
-		
+
 		JsonObject currentObject = element.getAsJsonObject();
 		for (int i = 1; i < path.length; i++) {
 			element = currentObject.get(path[i]);
@@ -74,8 +69,13 @@ public class JsonStorage implements Storage {
 				currentObject = element.getAsJsonObject();
 			}
 		}
-		
+
 		return element;
+	}
+
+	@Override
+	public synchronized boolean set(String key, byte[] value) {
+		return set0(key, gson.fromJson(new String(value), JsonElement.class));
 	}
 
 	public synchronized boolean set0(@NotNull String key, JsonElement value) {
@@ -151,25 +151,20 @@ public class JsonStorage implements Storage {
 	}
 
 	@Override
-	public List<String> list() {
+	public String[] list(String key) {
 		return data.entrySet()
 			.stream()
 			.map(Map.Entry::getKey)
-			.collect(Collectors.toList());
+			.collect(Collectors.toList()).toArray(String[]::new);
 	}
 
 	@Override
 	public synchronized boolean exists(String key) {
-		return get(key) != null;
+		return get0(key) != null;
 	}
 
 	@Override
 	public synchronized void save() throws IOException {
 		Files.writeString(location.toPath(), gson.toJson(data));
-	}
-
-	@Override
-	public boolean isJson() {
-		return true;
 	}
 }

@@ -4,14 +4,14 @@ import java.io.File;
 import java.io.IOException;
 
 public enum StorageType {
-	JSON(0, JsonStorage::new, new File("database.json")),
-	FILE(1, FileStorage::new, new File("files"));
+	JSON((byte) 0, JsonStorage::new, new File("database.json")),
+	FILE((byte) 1, FileStorage::new, new File("files"));
 
-	private final int id;
+	public final byte id;
 	private final StorageSupplier supplier;
 	private final File defaultLocation;
 	
-	StorageType(int id, StorageSupplier supplier, File defaultLocation) {
+	StorageType(byte id, StorageSupplier supplier, File defaultLocation) {
 		this.id = id;
 		this.supplier = supplier;
 		this.defaultLocation = defaultLocation;
@@ -25,10 +25,12 @@ public enum StorageType {
 		return defaultLocation;
 	}
 	
-	public static StorageType getById(int id) {
-		for (StorageType type : values())
-			if (type.id == id)
+	public static StorageType getById(byte id) {
+		for (StorageType type : values()) {
+			if (type.id == id) {
 				return type;
+			}
+		}
 
 		return null;
 	}

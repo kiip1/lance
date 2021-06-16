@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -58,7 +57,7 @@ public class FileStorage implements Storage {
 	}
 
 	@Override
-	public List<String> list() {
+	public String[] list(String key) {
 		location.mkdirs();
 
 		List<String> list = new ArrayList<>();
@@ -67,13 +66,13 @@ public class FileStorage implements Storage {
 			String[] files = location.list();
 
 			if (files == null) {
-				return list;
+				return new String[0];
 			}
 
-			list.addAll(Arrays.asList(files));
+			return files;
 		}
 
-		return list;
+		return new String[0];
 	}
 
 	@Override

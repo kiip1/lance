@@ -4,8 +4,9 @@ import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.configuration.ServerConfiguration;
 import nl.kiipdevelopment.lance.network.connection.ServerConnectionHandler;
 import nl.kiipdevelopment.lance.network.packet.PacketManager;
-import nl.kiipdevelopment.lance.listener.ServerListenerManager;
+import nl.kiipdevelopment.lance.network.listener.ServerListenerManager;
 import nl.kiipdevelopment.lance.storage.Storage;
+import nl.kiipdevelopment.lance.storage.StorageType;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -23,7 +24,7 @@ public class LanceServer extends Thread {
 
     private ServerSocket socket;
 
-    public Storage storage;
+    public Storage[] storages = new Storage[StorageType.values().length];
 
     public LanceServer() {
         this(DefaultConfiguration.HOST, DefaultConfiguration.PORT, DefaultConfiguration.getServerConfiguration());
@@ -53,13 +54,15 @@ public class LanceServer extends Thread {
     @Override
     public void run() {
         try {
-            storage = configuration.storageType.getStorage(configuration.storageLocation);
+            for (int i = 0; i < storages.length; i++) {
+                storages[i] = configuration.storageType.getStorage(configuration.storageLocation);
 
-            System.out.println("[" + getName() + "] " + "Using storage " + configuration.storageType.name());
-            System.out.println("[" + getName() + "] " + "Storage location is '" + configuration.storageLocation.toPath().toAbsolutePath() + "'");
+                System.out.println("[" + getName() + "] " + "Adding storage " + configuration.storageType.name());
+                System.out.println("[" + getName() + "] " + "Storage location is '" + configuration.storageLocation.toPath().toAbsolutePath() + "'");
+            }
         } catch (IOException e) {
-            System.err.println("Error happened while initializing storage");
             e.printStackTrace();
+
             return;
         }
 
@@ -73,9 +76,11 @@ public class LanceServer extends Thread {
                     ServerConnectionHandler handler = new ServerConnectionHandler(this, configuration, socket.accept());
                     handlers.add(handler);
                 } catch (SocketException e) {
-                    if (e.getMessage().equals("Socket closed"))
+                    if (e.getMessage().equals("Socket closed")) {
                         System.out.println("[" + getName() + "] " + "Server shut down.");
-                    else e.printStackTrace();
+                    } else {
+                        e.printStackTrace();
+                    }
                 }
         } catch (IOException e) {
             e.printStackTrace();

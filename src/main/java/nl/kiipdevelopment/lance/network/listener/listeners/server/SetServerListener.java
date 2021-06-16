@@ -1,6 +1,6 @@
-package nl.kiipdevelopment.lance.listener.listeners.server;
+package nl.kiipdevelopment.lance.network.listener.listeners.server;
 
-import nl.kiipdevelopment.lance.listener.ServerListener;
+import nl.kiipdevelopment.lance.network.listener.ServerListener;
 import nl.kiipdevelopment.lance.network.connection.ServerConnectionHandler;
 import nl.kiipdevelopment.lance.network.packet.ClientPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.client.ClientSetPacket;
@@ -19,7 +19,7 @@ public class SetServerListener extends ServerListener {
 
         try {
             ServerSetPacket serverSetPacket = new ServerSetPacket();
-            serverSetPacket.success = handler.server.storage.set(key, data);
+            serverSetPacket.success = handler.server.storages[handler.storage].set(key, data);
             handler.fire(serverSetPacket);
         } catch (Exception e) {
             e.printStackTrace();

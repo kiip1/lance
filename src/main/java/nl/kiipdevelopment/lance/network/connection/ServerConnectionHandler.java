@@ -10,7 +10,7 @@ import nl.kiipdevelopment.lance.network.packet.packets.client.ClientPasswordPack
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerCloseConnectionPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerHandshakePacket;
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerWelcomePacket;
-import nl.kiipdevelopment.lance.listener.ServerListenerManager;
+import nl.kiipdevelopment.lance.network.listener.ServerListenerManager;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -26,6 +26,7 @@ public class ServerConnectionHandler {
     public DataInputStream reader;
     public DataOutputStream writer;
     public boolean active = true;
+    public byte storage;
     public String name = "Client";
 
     public ServerConnectionHandler(LanceServer server, ServerConfiguration configuration, Socket socket) {
@@ -56,37 +57,42 @@ public class ServerConnectionHandler {
 
             ClientHandshakePacket clientHandShakePacket = (ClientHandshakePacket) next();
             name = clientHandShakePacket.name;
+            short version = clientHandShakePacket.version;
 
-            ServerHandshakePacket serverHandshakePacket = new ServerHandshakePacket();
-            serverHandshakePacket.authorisationRequired = authorisationRequired;
-            fire(serverHandshakePacket);
-    
-            if (authorisationRequired) {
-                authorised = false;
+            if (version == PacketManager.VERSION) {
+                ServerHandshakePacket serverHandshakePacket = new ServerHandshakePacket();
+                serverHandshakePacket.authorisationRequired = authorisationRequired;
+                fire(serverHandshakePacket);
 
-                ClientPasswordPacket passwordPacket = (ClientPasswordPacket) next();
-                String password = passwordPacket.password;
-        
-                if (password.equals(configuration.password)) {
-                    authorised = true;
-                } else {
-                    close("Incorrect password.");
-                }
-            }
-    
-            if (authorised) {
-                System.out.println("IT WORKS 2");
+                if (authorisationRequired) {
+                    authorised = false;
 
-                ServerWelcomePacket welcomePacket = new ServerWelcomePacket();
-                fire(welcomePacket);
+                    ClientPasswordPacket passwordPacket = (ClientPasswordPacket) next();
+                    String password = passwordPacket.password;
 
-                while (active) {
-                    ClientPacket packet = next();
-
-                    if (active) {
-                        ServerListenerManager.handle(this, packet);
+                    if (password.equals(configuration.password)) {
+                        authorised = true;
+                    } else {
+                        close("Incorrect password.");
                     }
                 }
+
+                if (authorised) {
+                    System.out.println("IT WORKS 2");
+
+                    ServerWelcomePacket welcomePacket = new ServerWelcomePacket();
+                    fire(welcomePacket);
+
+                    while (active) {
+                        ClientPacket packet = next();
+
+                        if (active) {
+                            ServerListenerManager.handle(this, packet);
+                        }
+                    }
+                }
+            } else {
+                close("Version is different.");
             }
     
             System.out.println("[Lance-Server-Connection-Handler] Closed connection from " + ipAndPort + ".");

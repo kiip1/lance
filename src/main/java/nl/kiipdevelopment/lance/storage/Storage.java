@@ -1,7 +1,6 @@
 package nl.kiipdevelopment.lance.storage;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.Executors;
 
 public interface Storage extends AutoCloseable {
@@ -11,7 +10,7 @@ public interface Storage extends AutoCloseable {
 	
 	boolean exists(String key) throws Exception;
 
-	List<String> list() throws Exception;
+	String[] list(String key) throws Exception;
 
 	void save() throws IOException;
 
@@ -24,10 +23,6 @@ public interface Storage extends AutoCloseable {
 				e.printStackTrace();
 			}
 		});
-	}
-
-	default boolean isJson() {
-		return false;
 	}
 }
 

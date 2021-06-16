@@ -3,7 +3,7 @@ package nl.kiipdevelopment.lance.network.connection;
 import nl.kiipdevelopment.lance.Validate;
 import nl.kiipdevelopment.lance.configuration.ClientConfiguration;
 import nl.kiipdevelopment.lance.exception.FailedException;
-import nl.kiipdevelopment.lance.listener.ClientListenerManager;
+import nl.kiipdevelopment.lance.network.listener.ClientListenerManager;
 import nl.kiipdevelopment.lance.network.packet.ClientPacket;
 import nl.kiipdevelopment.lance.network.packet.PacketManager;
 import nl.kiipdevelopment.lance.network.packet.ServerPacket;
@@ -24,7 +24,9 @@ public class ClientConnectionHandler {
     public final ClientConfiguration configuration;
     public final DataInputStream reader;
     public final DataOutputStream writer;
+
     public boolean active = true;
+    public byte storage;
 
     private final List<ServerPacket> queue = new ArrayList<>();
 
@@ -41,6 +43,7 @@ public class ClientConnectionHandler {
 
         ClientHandshakePacket clientHandshakePacket = new ClientHandshakePacket();
         clientHandshakePacket.name = configuration.name;
+        clientHandshakePacket.version = PacketManager.VERSION;
         fire(clientHandshakePacket);
 
         ServerHandshakePacket serverHandshakePacket = (ServerHandshakePacket) get();

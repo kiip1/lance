@@ -1,22 +1,27 @@
 package nl.kiipdevelopment.lance;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import nl.kiipdevelopment.lance.configuration.ClientConfiguration;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
-import nl.kiipdevelopment.lance.listener.ClientListenerManager;
 import nl.kiipdevelopment.lance.network.connection.ClientConnectionHandler;
+import nl.kiipdevelopment.lance.network.listener.ClientListenerManager;
 import nl.kiipdevelopment.lance.network.packet.PacketManager;
-import nl.kiipdevelopment.lance.network.packet.packets.client.ClientGetPacket;
-import nl.kiipdevelopment.lance.network.packet.packets.client.ClientSetPacket;
+import nl.kiipdevelopment.lance.network.packet.packets.client.*;
+import nl.kiipdevelopment.lance.network.packet.packets.server.ServerExistsPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerGetPacket;
+import nl.kiipdevelopment.lance.network.packet.packets.server.ServerListPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerSetPacket;
+import nl.kiipdevelopment.lance.storage.StorageType;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.concurrent.CompletableFuture;
 
 public class LanceClient extends Thread implements AutoCloseable {
+    private static final Gson gson = new Gson();
+
     private final ClientConfiguration configuration;
     private final String host;
     private final int port;
@@ -88,14 +93,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         }
     }
 
-    /**
-     * Retrieves a DataValue, being a json element or a string (file contents).
-     * If something goes wrong in the process (shouldn't happen), the error handler is invoked.
-     *
-     * @param key The path, separated by dots
-     * @return The data at the path
-     */
-    public byte[] get(String key) {
+    private byte[] get(String key) {
         ClientGetPacket clientGetPacket = new ClientGetPacket();
         clientGetPacket.key = key;
         handler.fire(clientGetPacket);
@@ -104,60 +102,8 @@ public class LanceClient extends Thread implements AutoCloseable {
 
         return serverGetPacket.data;
     }
-    
-    /**
-     * Same as LanceClient#get(String) but non-blocking, using a future.
-     *
-     * @param key The path, separated by dots
-     * @return A future for the data at the path
-     *
-     * @see LanceClient#get(String)
-     */
-    public CompletableFuture<byte[]> getAsync(String key) {
-        return CompletableFuture.supplyAsync(() -> get(key));
-    }
 
-    /**
-     * Checks if a key exists. Works on both json and file based storage.
-     * If something goes wrong in the process (shouldn't happen), the error handler is invoked.
-     *
-     * @param key The path, separated by dots
-     * @return Whether the key exists or not
-     */
-    public boolean exists(String key) {
-        throw new UnsupportedOperationException();
-    }
-    
-    /**
-     * Same as #exists(String) but non-blocking, using a future.
-     *
-     * @param key The path, separated by dots
-     * @return A future for whether the key exists or not
-     */
-    public CompletableFuture<Boolean> existsAsync(String key) {
-        return CompletableFuture.supplyAsync(() -> exists(key));
-    }
-    
-    /**
-     * Lists the files in the storage directory. Be aware that if the server
-     * does have a json based storage instead of files, this will give an error.
-     *
-     * @return The list of filenames
-     */
-    public String[] list() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Same as #listFilenames() but non-blocking, using a future.
-     *
-     * @return A future for the list of filenames
-     */
-    public CompletableFuture<String[]> listAsync() {
-        return CompletableFuture.supplyAsync(this::list);
-    }
-
-    public boolean set(String key, byte[] value) {
+    private boolean set(String key, byte[] value) {
         ClientSetPacket clientSetPacket = new ClientSetPacket();
         clientSetPacket.key = key;
         clientSetPacket.data = value;
@@ -168,8 +114,80 @@ public class LanceClient extends Thread implements AutoCloseable {
         return serverSetPacket.success;
     }
 
-    public CompletableFuture<Boolean> setAsync(String key, byte[] value) {
-        return CompletableFuture.supplyAsync(() -> set(key, value));
+    private boolean exists(String key) {
+        ClientExistsPacket clientExistsPacket = new ClientExistsPacket();
+        clientExistsPacket.key = key;
+        handler.fire(clientExistsPacket);
+
+        ServerExistsPacket serverExistsPacket = (ServerExistsPacket) handler.next();
+
+        return serverExistsPacket.exists;
+    }
+
+    private String[] list(String key) {
+        ClientListPacket clientListPacket = new ClientListPacket();
+        clientListPacket.key = key;
+        handler.fire(clientListPacket);
+
+        ServerListPacket serverListPacket = (ServerListPacket) handler.next();
+
+        return serverListPacket.keys;
+    }
+
+    public JsonElement getJson(String key) {
+        switchStorage(StorageType.JSON.id);
+
+        return gson.fromJson(new String(get(key)), JsonElement.class);
+    }
+
+    public boolean setJson(String key, JsonElement value) {
+        switchStorage(StorageType.JSON.id);
+
+        return set(key, gson.toJson(value).getBytes());
+    }
+
+    public boolean existsJson(String key) {
+        switchStorage(StorageType.JSON.id);
+
+        return exists(key);
+    }
+
+    public String[] listJson(String key) {
+        switchStorage(StorageType.JSON.id);
+
+        return list(key);
+    }
+
+    public byte[] getFile(String key) {
+        switchStorage(StorageType.FILE.id);
+
+        return get(key);
+    }
+
+    public boolean setFile(String key, byte[] value) {
+        switchStorage(StorageType.FILE.id);
+
+        return set(key, value);
+    }
+
+    public boolean existsFile(String key) {
+        switchStorage(StorageType.FILE.id);
+
+        return exists(key);
+    }
+
+    public String[] listFile(String key) {
+        switchStorage(StorageType.FILE.id);
+
+        return list(key);
+    }
+
+    private void switchStorage(byte id) {
+        if (handler.storage != id) {
+            ClientSwitchingStoragePacket switchingStoragePacket = new ClientSwitchingStoragePacket();
+            switchingStoragePacket.storage = id;
+            handler.fire(switchingStoragePacket);
+        }
     }
     
     @Override

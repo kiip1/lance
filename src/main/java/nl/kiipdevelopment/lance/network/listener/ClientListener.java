@@ -1,4 +1,4 @@
-package nl.kiipdevelopment.lance.listener;
+package nl.kiipdevelopment.lance.network.listener;
 
 import nl.kiipdevelopment.lance.network.connection.ClientConnectionHandler;
 import nl.kiipdevelopment.lance.network.packet.ServerPacket;

@@ -1,10 +1,10 @@
-package nl.kiipdevelopment.lance.listener.listeners.server;
+package nl.kiipdevelopment.lance.network.listener.listeners.server;
 
 import nl.kiipdevelopment.lance.network.connection.ServerConnectionHandler;
 import nl.kiipdevelopment.lance.network.packet.ClientPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.client.ClientGetPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerGetPacket;
-import nl.kiipdevelopment.lance.listener.ServerListener;
+import nl.kiipdevelopment.lance.network.listener.ServerListener;
 
 public class GetServerListener extends ServerListener {
     public GetServerListener() {
@@ -18,7 +18,7 @@ public class GetServerListener extends ServerListener {
 
         try {
             ServerGetPacket serverGetPacket = new ServerGetPacket();
-            serverGetPacket.data = handler.server.storage.get(key);
+            serverGetPacket.data = handler.server.storages[handler.storage].get(key);
             handler.fire(serverGetPacket);
         } catch (Exception e) {
             e.printStackTrace();

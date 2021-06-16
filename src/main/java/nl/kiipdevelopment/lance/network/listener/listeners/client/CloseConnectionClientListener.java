@@ -1,6 +1,6 @@
-package nl.kiipdevelopment.lance.listener.listeners.client;
+package nl.kiipdevelopment.lance.network.listener.listeners.client;
 
-import nl.kiipdevelopment.lance.listener.ClientListener;
+import nl.kiipdevelopment.lance.network.listener.ClientListener;
 import nl.kiipdevelopment.lance.network.connection.ClientConnectionHandler;
 import nl.kiipdevelopment.lance.network.packet.ServerPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerCloseConnectionPacket;

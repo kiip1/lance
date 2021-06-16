@@ -1,11 +1,15 @@
 package nl.kiipdevelopment.lance;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 
 import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
+    private static final Gson gson = new Gson();
+
     public static void main(String[] args) {
         System.out.println(
                 "##\n" +
@@ -92,14 +96,16 @@ public class Main {
                     String command = parts[0];
                     String arguments = String.join(" ", Arrays.copyOfRange(parts, 1, parts.length));
 
-                    if (command.equals("get")) {
-                        System.out.println(new String(client.get(arguments)));
-                    } else if (command.equals("set")) {
-                        String[] setParts = arguments.split(" ");
-                        String key = setParts[0];
-                        String value = String.join(" ", Arrays.copyOfRange(setParts, 1, setParts.length));
-
-                        System.out.println(client.set(key, value.getBytes()));
+                    switch (command) {
+                        case "get" -> System.out.println(client.getJson(arguments));
+                        case "set" -> {
+                            String[] setParts = arguments.split(" ");
+                            String key = setParts[0];
+                            String value = String.join(" ", Arrays.copyOfRange(setParts, 1, setParts.length));
+                            System.out.println(client.setJson(key, gson.fromJson(value, JsonElement.class)));
+                        }
+                        case "exists" -> System.out.println(client.existsJson(arguments));
+                        case "list" -> System.out.println(String.join("\n", client.listJson(arguments)));
                     }
                 }
             }

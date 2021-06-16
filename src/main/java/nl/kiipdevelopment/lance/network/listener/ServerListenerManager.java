@@ -1,6 +1,6 @@
-package nl.kiipdevelopment.lance.listener;
+package nl.kiipdevelopment.lance.network.listener;
 
-import nl.kiipdevelopment.lance.listener.listeners.server.*;
+import nl.kiipdevelopment.lance.network.listener.listeners.server.*;
 import nl.kiipdevelopment.lance.network.connection.ServerConnectionHandler;
 import nl.kiipdevelopment.lance.network.packet.ClientPacket;
 
@@ -17,10 +17,11 @@ public class ServerListenerManager {
             ServerListenerManager.register(
                 new CloseConnectionServerListener(),
                 new ExistsServerListener(),
-                new ListServerListener(),
                 new GetServerListener(),
+                new ListServerListener(),
                 new SetServerListener(),
-                new StopServerListener()
+                new StopServerListener(),
+                new SwitchingStorageServerListener()
             );
         }
     }

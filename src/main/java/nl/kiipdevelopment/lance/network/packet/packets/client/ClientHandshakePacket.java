@@ -6,6 +6,7 @@ import java.io.*;
 
 public class ClientHandshakePacket extends ClientPacket {
 	public String name;
+	public short version;
 
 	public ClientHandshakePacket() {
 		super((byte) 0, ClientHandshakePacket::new);
@@ -14,6 +15,7 @@ public class ClientHandshakePacket extends ClientPacket {
 	@Override
 	public void read(DataInputStream reader) throws IOException {
 		name = reader.readUTF();
+		version = reader.readShort();
 	}
 
 	@Override
@@ -21,5 +23,6 @@ public class ClientHandshakePacket extends ClientPacket {
 		super.write(writer);
 
 		writer.writeUTF(name);
+		writer.writeShort(version);
 	}
 }
