@@ -3,15 +3,14 @@ package nl.kiipdevelopment.lance;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.configuration.ServerConfiguration;
 import nl.kiipdevelopment.lance.network.connection.ServerConnectionHandler;
-import nl.kiipdevelopment.lance.network.packet.PacketManager;
 import nl.kiipdevelopment.lance.network.listener.ServerListenerManager;
+import nl.kiipdevelopment.lance.network.packet.PacketManager;
 import nl.kiipdevelopment.lance.storage.Storage;
 import nl.kiipdevelopment.lance.storage.StorageType;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,7 +74,7 @@ public class LanceServer extends Thread {
                 try {
                     ServerConnectionHandler handler = new ServerConnectionHandler(this, configuration, socket.accept());
                     handlers.add(handler);
-                } catch (SocketException e) {
+                } catch (IOException e) {
                     if (e.getMessage().equals("Socket closed")) {
                         System.out.println("[" + getName() + "] " + "Server shut down.");
                     } else {
@@ -87,10 +86,11 @@ public class LanceServer extends Thread {
         }
     }
 
-    public void shutdown() {
+    public void close() {
         try {
-            for (ServerConnectionHandler handler : handlers)
+            for (ServerConnectionHandler handler : handlers) {
                 handler.close("Server stopping.");
+            }
 
             socket.close();
         } catch (IOException e) {

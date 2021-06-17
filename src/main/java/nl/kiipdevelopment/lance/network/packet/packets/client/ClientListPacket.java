@@ -10,7 +10,7 @@ public class ClientListPacket extends ClientPacket {
 	public String key;
 
 	public ClientListPacket() {
-		super((byte) 12, ClientListPacket::new);
+		super((byte) 7, ClientListPacket::new);
 	}
 
 	@Override

@@ -8,7 +8,7 @@ public class ClientPasswordPacket extends ClientPacket {
 	public String password;
 
 	public ClientPasswordPacket() {
-		super((byte) 3, ClientPasswordPacket::new);
+		super((byte) 2, ClientPasswordPacket::new);
 	}
 
 	@Override

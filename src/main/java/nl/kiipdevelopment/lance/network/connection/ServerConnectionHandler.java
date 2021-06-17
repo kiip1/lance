@@ -1,7 +1,9 @@
 package nl.kiipdevelopment.lance.network.connection;
 
 import nl.kiipdevelopment.lance.LanceServer;
+import nl.kiipdevelopment.lance.Validate;
 import nl.kiipdevelopment.lance.configuration.ServerConfiguration;
+import nl.kiipdevelopment.lance.network.listener.ServerListenerManager;
 import nl.kiipdevelopment.lance.network.packet.ClientPacket;
 import nl.kiipdevelopment.lance.network.packet.PacketManager;
 import nl.kiipdevelopment.lance.network.packet.ServerPacket;
@@ -9,14 +11,17 @@ import nl.kiipdevelopment.lance.network.packet.packets.client.ClientHandshakePac
 import nl.kiipdevelopment.lance.network.packet.packets.client.ClientPasswordPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerCloseConnectionPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerHandshakePacket;
+import nl.kiipdevelopment.lance.network.packet.packets.server.ServerHeartbeatPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerWelcomePacket;
-import nl.kiipdevelopment.lance.network.listener.ServerListenerManager;
+import org.jetbrains.annotations.Contract;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ServerConnectionHandler {
     public final LanceServer server;
@@ -27,6 +32,7 @@ public class ServerConnectionHandler {
     public DataOutputStream writer;
     public boolean active = true;
     public byte storage;
+    public byte missedHeartbeats;
     public String name = "Client";
 
     public ServerConnectionHandler(LanceServer server, ServerConfiguration configuration, Socket socket) {
@@ -81,24 +87,39 @@ public class ServerConnectionHandler {
                     ServerWelcomePacket welcomePacket = new ServerWelcomePacket();
                     fire(welcomePacket);
 
-                    while (active) {
-                        ClientPacket packet = next();
+                    Executors.newSingleThreadScheduledExecutor()
+                        .scheduleAtFixedRate(() -> {
+                            missedHeartbeats++;
 
-                        if (active) {
-                            ServerListenerManager.handle(this, packet);
+                            ServerHeartbeatPacket heartbeatPacket = new ServerHeartbeatPacket();
+                            fire(heartbeatPacket);
+
+                            if (missedHeartbeats > 3) {
+                                close("Timed out.");
+                            }
+                        }, 0, 5, TimeUnit.SECONDS);
+
+                    Executors.newSingleThreadScheduledExecutor().execute(() -> {
+                        while (active) {
+                            ClientPacket packet = next();
+
+                            if (active) {
+                                ServerListenerManager.handle(this, packet);
+                            }
                         }
-                    }
+
+                        System.out.println("[Lance-Server-Connection-Handler] Closed connection from " + ipAndPort + ".");
+                    });
                 }
             } else {
                 close("Version is different.");
             }
-    
-            System.out.println("[Lance-Server-Connection-Handler] Closed connection from " + ipAndPort + ".");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    @Contract("-> !null")
     public ClientPacket next() {
         try {
             byte id = reader.readByte();
@@ -110,33 +131,47 @@ public class ServerConnectionHandler {
 
             return packet;
         } catch (IOException e) {
-            e.printStackTrace();
+            if (!e.getMessage().equals("Socket closed")) {
+                e.printStackTrace();
 
-            close("Bad packet.");
+                close("Bad packet.");
+            }
         }
+
+        Validate.fail("Bad packet.");
 
         return null;
     }
 
     public void fire(ServerPacket packet) {
+        if (!active) {
+            return;
+        }
+
         try {
             packet.write(writer);
         } catch (IOException e) {
             e.printStackTrace();
-
-            close("Bad packet.");
         }
     }
 
     public void close(String message) {
-        active = false;
-
-        System.out.println("[Lance-Server-Connection-Handler] " + name + " disconnected with the reason " + message);
+        if (!active) {
+            return;
+        }
 
         ServerCloseConnectionPacket packet = new ServerCloseConnectionPacket();
-
         packet.message = message;
-
         fire(packet);
+
+        delete();
+
+        System.out.println("[Lance-Server-Connection-Handler] " + name + " disconnected with the reason " + message);
+    }
+
+    public void delete() {
+        server.handlers.remove(this);
+
+        active = false;
     }
 }

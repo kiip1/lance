@@ -11,7 +11,7 @@ public class ClientSetPacket extends ClientPacket {
 	public byte[] data;
 
 	public ClientSetPacket() {
-		super((byte) 8, ClientSetPacket::new);
+		super((byte) 5, ClientSetPacket::new);
 	}
 
 	@Override

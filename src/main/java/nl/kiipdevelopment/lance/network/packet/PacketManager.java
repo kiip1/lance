@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public class PacketManager {
-	public static final short VERSION = 2;
+	public static final short VERSION = 3;
 
 	public static final Map<Byte, Supplier<Packet>> packets = new HashMap<>();
 	private static boolean initialised = false;
@@ -21,6 +21,7 @@ public class PacketManager {
 				new ClientExistsPacket(),
 				new ClientGetPacket(),
 				new ClientHandshakePacket(),
+				new ClientHeartbeatPacket(),
 				new ClientListPacket(),
 				new ClientPasswordPacket(),
 				new ClientSetPacket(),
@@ -29,6 +30,7 @@ public class PacketManager {
 				new ServerExistsPacket(),
 				new ServerGetPacket(),
 				new ServerHandshakePacket(),
+				new ServerHeartbeatPacket(),
 				new ServerListPacket(),
 				new ServerSetPacket(),
 				new ServerWelcomePacket()

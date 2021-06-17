@@ -8,10 +8,7 @@ import nl.kiipdevelopment.lance.network.connection.ClientConnectionHandler;
 import nl.kiipdevelopment.lance.network.listener.ClientListenerManager;
 import nl.kiipdevelopment.lance.network.packet.PacketManager;
 import nl.kiipdevelopment.lance.network.packet.packets.client.*;
-import nl.kiipdevelopment.lance.network.packet.packets.server.ServerExistsPacket;
-import nl.kiipdevelopment.lance.network.packet.packets.server.ServerGetPacket;
-import nl.kiipdevelopment.lance.network.packet.packets.server.ServerListPacket;
-import nl.kiipdevelopment.lance.network.packet.packets.server.ServerSetPacket;
+import nl.kiipdevelopment.lance.network.packet.packets.server.*;
 import nl.kiipdevelopment.lance.storage.StorageType;
 
 import java.io.DataInputStream;
@@ -189,9 +186,11 @@ public class LanceClient extends Thread implements AutoCloseable {
             handler.fire(switchingStoragePacket);
         }
     }
-    
+
     @Override
     public void close() {
+        handler.close("Disconnected by user.");
+
         try {
             reader.close();
             writer.close();

@@ -7,7 +7,7 @@ import nl.kiipdevelopment.lance.network.packet.ClientPacket;
 import java.util.*;
 
 public class ServerListenerManager {
-    public static final Map<Byte, ServerListener> listeners = new HashMap<>();
+    public static final Map<Byte, ServerListener<?>> listeners = new HashMap<>();
     private static boolean initialised = false;
 
     public static void init() {
@@ -15,23 +15,23 @@ public class ServerListenerManager {
             initialised = true;
 
             ServerListenerManager.register(
-                new CloseConnectionServerListener(),
-                new ExistsServerListener(),
-                new GetServerListener(),
-                new ListServerListener(),
-                new SetServerListener(),
-                new StopServerListener(),
-                new SwitchingStorageServerListener()
+                new ServerCloseConnectionListener(),
+                new ServerExistsListener(),
+                new ServerGetListener(),
+                new ServerHeartbeatListener(),
+                new ServerListListener(),
+                new ServerSetListener(),
+                new ServerSwitchingStorageListener()
             );
         }
     }
 
-    public static void register(ServerListener serverListener) {
+    public static void register(ServerListener<?> serverListener) {
         listeners.put(serverListener.id, serverListener);
     }
 
-    public static void register(ServerListener serverListener, ServerListener... serverListeners) {
-        List<ServerListener> serverListenerList = new ArrayList<>(Arrays.asList(serverListeners));
+    public static void register(ServerListener<?> serverListener, ServerListener<?>... serverListeners) {
+        List<ServerListener<?>> serverListenerList = new ArrayList<>(Arrays.asList(serverListeners));
 
         serverListenerList.add(serverListener);
 
@@ -39,11 +39,13 @@ public class ServerListenerManager {
     }
 
     public static void handle(ServerConnectionHandler handler, ClientPacket packet) {
+        //noinspection rawtypes
         ServerListener serverListener = listeners.get(packet.id);
 
         if (serverListener == null) {
             handler.close("There is no listener for packet with id " + packet.id + ".");
         } else {
+            //noinspection unchecked
             serverListener.execute(handler, packet);
         }
     }

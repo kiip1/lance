@@ -10,7 +10,7 @@ public class ClientCloseConnectionPacket extends ClientPacket {
 	public String message;
 
 	public ClientCloseConnectionPacket() {
-		super((byte) 5, ClientCloseConnectionPacket::new);
+		super((byte) 4, ClientCloseConnectionPacket::new);
 	}
 
 	@Override

@@ -10,7 +10,7 @@ public class ServerHandshakePacket extends ServerPacket {
 	public boolean authorisationRequired;
 
 	public ServerHandshakePacket() {
-		super((byte) 1, ServerHandshakePacket::new);
+		super((byte) 0, ServerHandshakePacket::new);
 	}
 
 	@Override

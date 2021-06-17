@@ -4,9 +4,9 @@ import nl.kiipdevelopment.lance.network.packet.ServerPacket;
 
 import java.io.DataInputStream;
 
-public class ServerWelcomePacket extends ServerPacket {
-	public ServerWelcomePacket() {
-		super((byte) 2, ServerWelcomePacket::new);
+public class ServerHeartbeatPacket extends ServerPacket {
+	public ServerHeartbeatPacket() {
+		super((byte) 1, ServerHeartbeatPacket::new);
 	}
 
 	@Override

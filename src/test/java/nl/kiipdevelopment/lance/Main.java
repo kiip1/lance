@@ -24,9 +24,9 @@ public class Main {
         String line;
         while ((line = scanner.nextLine()) != null) {
             String[] parts = line.split(" ");
+            String command = parts[0];
 
             if (parts.length > 1) {
-                String command = parts[0];
                 String arguments = String.join(" ", Arrays.copyOfRange(parts, 1, parts.length));
 
                 switch (command) {
@@ -39,6 +39,10 @@ public class Main {
                     }
                     case "exists" -> System.out.println(client.existsJson(arguments));
                     case "list" -> System.out.println(String.join("\n", client.listJson(arguments)));
+                }
+            } else {
+                if (command.equals("stop")) {
+                    client.close();
                 }
             }
         }

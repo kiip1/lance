@@ -2,16 +2,17 @@ package nl.kiipdevelopment.lance.network.connection;
 
 import nl.kiipdevelopment.lance.Validate;
 import nl.kiipdevelopment.lance.configuration.ClientConfiguration;
-import nl.kiipdevelopment.lance.exception.FailedException;
 import nl.kiipdevelopment.lance.network.listener.ClientListenerManager;
 import nl.kiipdevelopment.lance.network.packet.ClientPacket;
 import nl.kiipdevelopment.lance.network.packet.PacketManager;
 import nl.kiipdevelopment.lance.network.packet.ServerPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.client.ClientCloseConnectionPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.client.ClientHandshakePacket;
+import nl.kiipdevelopment.lance.network.packet.packets.client.ClientHeartbeatPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.client.ClientPasswordPacket;
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerHandshakePacket;
 import nl.kiipdevelopment.lance.network.packet.packets.server.ServerWelcomePacket;
+import org.jetbrains.annotations.Contract;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ClientConnectionHandler {
     public final ClientConfiguration configuration;
@@ -27,6 +29,7 @@ public class ClientConnectionHandler {
 
     public boolean active = true;
     public byte storage;
+    public byte missedHeartbeats;
 
     private final List<ServerPacket> queue = new ArrayList<>();
 
@@ -60,6 +63,18 @@ public class ClientConnectionHandler {
         }
 
         if (authorised) {
+            Executors.newSingleThreadScheduledExecutor()
+                .scheduleAtFixedRate(() -> {
+                    missedHeartbeats++;
+
+                    ClientHeartbeatPacket heartbeatPacket = new ClientHeartbeatPacket();
+                    fire(heartbeatPacket);
+
+                    if (missedHeartbeats > 3) {
+                        close("Timed out.");
+                    }
+                }, 0, 5, TimeUnit.SECONDS);
+
             Executors.newSingleThreadScheduledExecutor().execute(() -> {
                 while (active) {
                     ServerPacket packet = get();
@@ -81,6 +96,7 @@ public class ClientConnectionHandler {
         return queue.remove(0);
     }
 
+    @Contract("-> !null")
     private ServerPacket get() {
         try {
             byte id = reader.readByte();
@@ -92,21 +108,27 @@ public class ClientConnectionHandler {
 
             return packet;
         } catch (IOException e) {
-            e.printStackTrace();
+            if (!e.getMessage().equals("Socket closed")) {
+                e.printStackTrace();
 
-            close("Bad packet.");
+                close("Bad packet.");
+            }
         }
 
-        throw new FailedException("Something went terribly wrong.");
+        Validate.fail("Bad packet.");
+
+        return null;
     }
 
     public void fire(ClientPacket packet) {
+        if (!active) {
+            return;
+        }
+
         try {
             packet.write(writer);
         } catch (IOException e) {
             e.printStackTrace();
-
-            close("Bad packet.");
         }
     }
 
@@ -115,12 +137,14 @@ public class ClientConnectionHandler {
     }
 
     public void close(String message) {
-        active = false;
+        if (!active) {
+            return;
+        }
 
         ClientCloseConnectionPacket packet = new ClientCloseConnectionPacket();
-
         packet.message = message;
-
         fire(packet);
+
+        active = false;
     }
 }

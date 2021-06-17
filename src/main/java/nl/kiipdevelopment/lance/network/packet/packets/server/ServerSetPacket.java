@@ -10,7 +10,7 @@ public class ServerSetPacket extends ServerPacket {
 	public boolean success;
 
 	public ServerSetPacket() {
-		super((byte) 9, ServerSetPacket::new);
+		super((byte) 4, ServerSetPacket::new);
 	}
 
 	@Override

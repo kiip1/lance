@@ -10,7 +10,7 @@ public class ServerExistsPacket extends ServerPacket {
 	public boolean exists;
 
 	public ServerExistsPacket() {
-		super((byte) 14, ServerExistsPacket::new);
+		super((byte) 7, ServerExistsPacket::new);
 	}
 
 	@Override

@@ -10,7 +10,7 @@ public class ClientSwitchingStoragePacket extends ClientPacket {
 	public byte storage;
 
 	public ClientSwitchingStoragePacket() {
-		super((byte) 10, ClientSwitchingStoragePacket::new);
+		super((byte) 3, ClientSwitchingStoragePacket::new);
 	}
 
 	@Override

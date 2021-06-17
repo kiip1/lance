@@ -12,7 +12,7 @@ public class ServerListPacket extends ServerPacket {
 	public String[] keys = new String[0];
 
 	public ServerListPacket() {
-		super((byte) 13, ServerListPacket::new);
+		super((byte) 6, ServerListPacket::new);
 	}
 
 	@Override

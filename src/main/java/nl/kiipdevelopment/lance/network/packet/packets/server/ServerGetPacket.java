@@ -10,7 +10,7 @@ public class ServerGetPacket extends ServerPacket {
 	public byte[] data;
 
 	public ServerGetPacket() {
-		super((byte) 7, ServerGetPacket::new);
+		super((byte) 5, ServerGetPacket::new);
 	}
 
 	@Override
