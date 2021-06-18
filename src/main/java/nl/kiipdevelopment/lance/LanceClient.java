@@ -5,10 +5,13 @@ import com.google.gson.JsonElement;
 import nl.kiipdevelopment.lance.configuration.ClientConfiguration;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.network.connection.ClientConnectionHandler;
-import nl.kiipdevelopment.lance.network.listener.ClientListenerManager;
+import nl.kiipdevelopment.lance.network.listener.ListenerManager;
 import nl.kiipdevelopment.lance.network.packet.PacketManager;
 import nl.kiipdevelopment.lance.network.packet.packets.client.*;
-import nl.kiipdevelopment.lance.network.packet.packets.server.*;
+import nl.kiipdevelopment.lance.network.packet.packets.server.ServerExistsPacket;
+import nl.kiipdevelopment.lance.network.packet.packets.server.ServerGetPacket;
+import nl.kiipdevelopment.lance.network.packet.packets.server.ServerListPacket;
+import nl.kiipdevelopment.lance.network.packet.packets.server.ServerSetPacket;
 import nl.kiipdevelopment.lance.storage.StorageType;
 
 import java.io.DataInputStream;
@@ -50,7 +53,7 @@ public class LanceClient extends Thread implements AutoCloseable {
         this.configuration = configuration;
 
         PacketManager.init();
-        ClientListenerManager.init();
+        ListenerManager.initClient();
 
         start();
 

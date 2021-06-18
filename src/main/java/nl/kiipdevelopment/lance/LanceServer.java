@@ -3,7 +3,7 @@ package nl.kiipdevelopment.lance;
 import nl.kiipdevelopment.lance.configuration.DefaultConfiguration;
 import nl.kiipdevelopment.lance.configuration.ServerConfiguration;
 import nl.kiipdevelopment.lance.network.connection.ServerConnectionHandler;
-import nl.kiipdevelopment.lance.network.listener.ServerListenerManager;
+import nl.kiipdevelopment.lance.network.listener.ListenerManager;
 import nl.kiipdevelopment.lance.network.packet.PacketManager;
 import nl.kiipdevelopment.lance.storage.Storage;
 import nl.kiipdevelopment.lance.storage.StorageType;
@@ -45,7 +45,7 @@ public class LanceServer extends Thread {
         this.configuration = configuration;
 
         PacketManager.init();
-        ServerListenerManager.init();
+        ListenerManager.initServer();
 
         start();
     }

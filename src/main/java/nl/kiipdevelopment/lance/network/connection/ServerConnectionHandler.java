@@ -3,7 +3,7 @@ package nl.kiipdevelopment.lance.network.connection;
 import nl.kiipdevelopment.lance.LanceServer;
 import nl.kiipdevelopment.lance.Validate;
 import nl.kiipdevelopment.lance.configuration.ServerConfiguration;
-import nl.kiipdevelopment.lance.network.listener.ServerListenerManager;
+import nl.kiipdevelopment.lance.network.listener.ListenerManager;
 import nl.kiipdevelopment.lance.network.packet.ClientPacket;
 import nl.kiipdevelopment.lance.network.packet.PacketManager;
 import nl.kiipdevelopment.lance.network.packet.ServerPacket;
@@ -23,7 +23,7 @@ import java.net.SocketException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ServerConnectionHandler {
+public class ServerConnectionHandler implements ConnectionHandler {
     public final LanceServer server;
     public final ServerConfiguration configuration;
     public final Socket socket;
@@ -65,7 +65,7 @@ public class ServerConnectionHandler {
             name = clientHandShakePacket.name;
             short version = clientHandShakePacket.version;
 
-            if (version == PacketManager.VERSION) {
+            if (version == PacketManager.version) {
                 ServerHandshakePacket serverHandshakePacket = new ServerHandshakePacket();
                 serverHandshakePacket.authorisationRequired = authorisationRequired;
                 fire(serverHandshakePacket);
@@ -104,7 +104,7 @@ public class ServerConnectionHandler {
                             ClientPacket packet = next();
 
                             if (active) {
-                                ServerListenerManager.handle(this, packet);
+                                ListenerManager.handle(this, packet);
                             }
                         }
 

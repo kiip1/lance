@@ -2,7 +2,7 @@ package nl.kiipdevelopment.lance.network.connection;
 
 import nl.kiipdevelopment.lance.Validate;
 import nl.kiipdevelopment.lance.configuration.ClientConfiguration;
-import nl.kiipdevelopment.lance.network.listener.ClientListenerManager;
+import nl.kiipdevelopment.lance.network.listener.ListenerManager;
 import nl.kiipdevelopment.lance.network.packet.ClientPacket;
 import nl.kiipdevelopment.lance.network.packet.PacketManager;
 import nl.kiipdevelopment.lance.network.packet.ServerPacket;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ClientConnectionHandler {
+public class ClientConnectionHandler implements ConnectionHandler {
     public final ClientConfiguration configuration;
     public final DataInputStream reader;
     public final DataOutputStream writer;
@@ -46,7 +46,7 @@ public class ClientConnectionHandler {
 
         ClientHandshakePacket clientHandshakePacket = new ClientHandshakePacket();
         clientHandshakePacket.name = configuration.name;
-        clientHandshakePacket.version = PacketManager.VERSION;
+        clientHandshakePacket.version = PacketManager.version;
         fire(clientHandshakePacket);
 
         ServerHandshakePacket serverHandshakePacket = (ServerHandshakePacket) get();
@@ -80,7 +80,7 @@ public class ClientConnectionHandler {
                     ServerPacket packet = get();
 
                     if (active) {
-                        ClientListenerManager.handle(this, packet);
+                        ListenerManager.handle(this, packet);
                     }
                 }
             });
